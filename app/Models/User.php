@@ -9,6 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+<<<<<<< HEAD
+/**
+ * Class User
+ * Model untuk merepresentasikan data Pengguna (User) di dalam database.
+ * Model ini mewarisi kelas Authenticatable untuk menangani otentikasi default Laravel.
+ */
+#[Fillable(['name', 'email', 'password'])]
+#[Hidden(['password', 'remember_token'])]
+=======
 #[Fillable([
     'name',
     'email',
@@ -20,13 +29,19 @@ use Illuminate\Notifications\Notifiable;
     'password',
     'remember_token',
 ])]
+>>>>>>> bb393d0d59e3b7b4171a66201def415e171419a7
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
+<<<<<<< HEAD
+     * Menentukan casting atribut database ke tipe data objek PHP.
+     * Email verified cast ke datetime, password cast ke hashed otomatis saat disimpan.
+=======
      * Cast attributes.
+>>>>>>> bb393d0d59e3b7b4171a66201def415e171419a7
      */
     protected function casts(): array
     {

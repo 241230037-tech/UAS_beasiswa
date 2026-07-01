@@ -7,26 +7,29 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Menjalankan migrasi untuk membuat tabel-tabel database.
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
+            $table->id(); // Primary Key auto-increment
+            $table->string('name'); // Nama lengkap
+            $table->string('email')->unique(); // Email unik untuk login
+            $table->timestamp('email_verified_at')->nullable(); // Waktu verifikasi email
+            $table->string('password'); // Password terenkripsi
+            $table->string('role')->default('user'); // Peran akun: 'user' atau 'admin'
+            $table->rememberToken(); // Token remember-me untuk login jangka panjang
+            $table->timestamps(); // Kolom created_at dan updated_at otomatis
         });
 
+        // Membuat tabel 'password_reset_tokens' untuk token pengaturan ulang password
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Membuat tabel 'sessions' untuk mencatat session aktif pengguna (khusus jika menggunakan database session driver)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -38,7 +41,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Membatalkan migrasi (menghapus tabel-tabel jika ada proses rollback).
      */
     public function down(): void
     {
