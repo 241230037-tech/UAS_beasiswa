@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -30,4 +31,10 @@ class Bookmark extends Model
     {
         return $this->belongsTo(Scholarship::class, 'scholarship_id', 'id');
     }
+=======
+
+class Bookmark extends Model
+{
+    //
+>>>>>>> bb393d0d59e3b7b4171a66201def415e171419a7
 }
