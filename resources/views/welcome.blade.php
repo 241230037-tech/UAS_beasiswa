@@ -74,7 +74,7 @@
 
 <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
 
-Platform Informasi Beasiswa
+Platform Informasi Beasiswa 
 
 </span>
 
@@ -123,7 +123,7 @@ Pelajari
 <div>
 
 <img
-src="https://images.unsplash.com/photo-1722648325285-058946b4487b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+src="https://pmb.unmuhpnk.ac.id/assets/images/hero-mahasiswa.png"
 class="rounded-3xl shadow-2xl">
 
 </div>
