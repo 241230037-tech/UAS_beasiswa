@@ -36,11 +36,20 @@ class PageController extends Controller
      */
     public function home(): View
     {
+        $scholarships = [];
+        $adBanners = [];
+
+        try {
+            $scholarships = Scholarship::all()->toArray();
+            $adBanners = AdBanner::all()->toArray();
+        } catch (\Throwable $e) {
+            $scholarships = [];
+            $adBanners = [];
+        }
+
         return view('pages.home', [
-            // Mengambil semua data beasiswa dari database dan mengubahnya ke bentuk array biasa
-            'scholarships' => Scholarship::all()->toArray(),
-            // Mengambil semua data spanduk iklan banner
-            'adBanners' => AdBanner::all()->toArray(),
+            'scholarships' => $scholarships,
+            'adBanners' => $adBanners,
         ]);
     }
 
@@ -62,8 +71,16 @@ class PageController extends Controller
      */
     public function library(Request $request): View
     {
+        $scholarships = [];
+
+        try {
+            $scholarships = Scholarship::all()->toArray();
+        } catch (\Throwable $e) {
+            $scholarships = [];
+        }
+
         return view('pages.library', [
-            'scholarships' => Scholarship::all()->toArray(),
+            'scholarships' => $scholarships,
             'filters' => [
                 'q' => $request->query('q', ''),
             ],
@@ -75,8 +92,16 @@ class PageController extends Controller
      */
     public function dashboard(): View
     {
+        $scholarships = [];
+
+        try {
+            $scholarships = Scholarship::all()->toArray();
+        } catch (\Throwable $e) {
+            $scholarships = [];
+        }
+
         return view('pages.dashboard', [
-            'scholarships' => Scholarship::all()->toArray(),
+            'scholarships' => $scholarships,
         ]);
     }
 
@@ -200,9 +225,20 @@ class PageController extends Controller
      */
     public function admin(): View
     {
+        $scholarships = [];
+        $adBanners = [];
+
+        try {
+            $scholarships = Scholarship::all()->toArray();
+            $adBanners = AdBanner::all()->toArray();
+        } catch (\Throwable $e) {
+            $scholarships = [];
+            $adBanners = [];
+        }
+
         return view('pages.admin', [
-            'scholarships' => Scholarship::all()->toArray(),
-            'adBanners' => AdBanner::all()->toArray(),
+            'scholarships' => $scholarships,
+            'adBanners' => $adBanners,
         ]);
     }
 
