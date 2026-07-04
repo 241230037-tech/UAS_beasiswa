@@ -1,82 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id" class="dark">
 <head>
-
     <meta charset="UTF-8">
-    <title>BeasiswaPedia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Judul Halaman dinamis diambil dari section('title') di masing-masing page -->
+    <title>@yield('title', 'PortalBeasiswa')</title>
+    <!-- CSRF Token Laravel untuk keamanan request POST AJAX / Form -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{-- Terapkan preferensi tema (dark/light) dari LocalStorage sebelum render HTML agar tidak ada kedipan warna --}}
+    <script>
+        (function () {
+            var saved = localStorage.getItem('portal-theme') || 'dark';
+            if (saved === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
-    @vite(['resources/css/app.css','resources/js/app.js'])
-
+    <!-- Memanggil bundler aset Vite untuk memuat file CSS dan JS utama -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
+    @yield('head')
 </head>
+<body class="min-h-screen bg-background text-foreground antialiased">
+    <!-- Container untuk notifikasi Toast melayang -->
+    <div id="toast-container"></div>
 
-<body class="hold-transition sidebar-mini">
-
-<div class="wrapper">
-
-    @include('layouts.navbar')
-
-    @include('layouts.sidebar')
-
-    <div class="content-wrapper">
-
-        <section class="content pt-3">
-
-            <div class="container-fluid">
-
-                @yield('content')
-
+    {{-- Modal Tentang Kami & Kontak Bantuan Hubungi Kami --}}
+    <div id="about-modal" class="hidden">
+        <div class="modal-backdrop" id="about-modal-backdrop"></div>
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="bg-card border-2 border-border rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden z-10 modal-box">
+                <div class="h-1.5 bg-[#e53935] w-full"></div>
+                <button type="button" id="btn-close-about-modal" class="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="info" class="w-5 h-5 text-[#e53935]"></i>
+                        <h2 class="text-foreground font-black text-lg">Tentang Kami</h2>
+                    </div>
+                    <div class="space-y-3 text-xs leading-relaxed text-muted-foreground mb-6">
+                        <p><strong>PortalBeasiswa</strong> adalah platform informasi beasiswa terpercaya yang dirancang khusus untuk mempermudah pelajar Indonesia dalam mencari dan melamar berbagai program beasiswa secara real-time.</p>
+                        <p>Visi kami adalah mewujudkan pemerataan pendidikan dengan memberikan akses informasi beasiswa yang akurat, transparan, dan mudah diakses oleh siapa saja, di mana saja.</p>
+                        
+                        <div class="border-t border-border pt-3 mt-3">
+                            <p class="font-bold text-foreground mb-1.5 flex items-center gap-1.5 text-xs">
+                                <i data-lucide="alert-triangle" class="w-4 h-4 text-[#e53935]"></i>
+                                Laporkan Masalah / Error
+                            </p>
+                            <p>Jika Anda mengalami kendala teknis, error saat mengunggah berkas, atau kesulitan lain saat menggunakan website kami, hubungi pusat bantuan kami:</p>
+                            <p class="mt-2 text-foreground font-black flex items-center gap-1.5 bg-muted p-2.5 rounded-xl border border-border">
+                                <i data-lucide="phone" class="w-4 h-4 text-green-500"></i>
+                                WhatsApp / Call Center: +62 812-3456-7890
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-close-about-modal-btn" class="w-full btn-3d-red py-3 rounded-xl text-sm font-bold shadow-lg shadow-red-500/10 cursor-pointer">Tutup</button>
+                </div>
             </div>
-
-        </section>
-
+        </div>
     </div>
 
-    @include('layouts.footer')
+    <!-- Menampilkan konten halaman utama yang di-yield oleh page yang meng-extend file layouts ini -->
+    @yield('content')
 
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-
+    <!-- Memuat Lucide Icons library untuk render icon SVG secara dinamis -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    @stack('scripts')
+    @yield('scripts')
 </body>
-
-<form method="POST" action="{{ route('logout') }}" class="mt-auto">
-    @csrf
-
-    <button
-        type="submit"
-        class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-600 hover:bg-red-50 transition">
-
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="h-5 w-5"
-             fill="none"
-             viewBox="0 0 24 24"
-             stroke="currentColor">
-
-            <path stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
-
-        </svg>
-
-        Logout
-
-    </button>
-</form>
-
 </html>
