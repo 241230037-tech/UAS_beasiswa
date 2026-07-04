@@ -17,7 +17,11 @@ return new class extends Migration
             $table->string('email')->unique(); // Email unik untuk login
             $table->timestamp('email_verified_at')->nullable(); // Waktu verifikasi email
             $table->string('password'); // Password terenkripsi
-            $table->string('role')->default('user'); // Peran akun: 'user' atau 'admin'
+            $table->enum('role', ['admin', 'mahasiswa'])
+      ->default('mahasiswa');
+
+$table->boolean('status')
+      ->default(true);
             $table->rememberToken(); // Token remember-me untuk login jangka panjang
             $table->timestamps(); // Kolom created_at dan updated_at otomatis
         });

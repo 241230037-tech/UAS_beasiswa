@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Beasiswa;
 use App\Models\User;
+use App\Models\Beasiswa;
 
 class DashboardController extends Controller
 {

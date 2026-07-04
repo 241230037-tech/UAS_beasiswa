@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\BeasiswaController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Mahasiswa\DashboardController as MahasiswaDashboardController;
 
 Route::get('/', function () {
@@ -16,9 +18,18 @@ Route::middleware(['auth', 'mahasiswa'])->group(function () {
 
 Route::prefix('admin')
     ->middleware(['auth', 'admin'])
+    ->name('admin.')
     ->group(function () {
+
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('admin.dashboard');
+            ->name('dashboard');
+
+        Route::resource('beasiswa', BeasiswaController::class);
+
+        Route::resource('users', UserController::class);
+
+        // Route::resource('iklan', IklanController::class);
+
     });
 
 Route::middleware('auth')->group(function () {

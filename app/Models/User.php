@@ -3,46 +3,28 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-<<<<<<< HEAD
-/**
- * Class User
- * Model untuk merepresentasikan data Pengguna (User) di dalam database.
- * Model ini mewarisi kelas Authenticatable untuk menangani otentikasi default Laravel.
- */
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-=======
-#[Fillable([
-    'name',
-    'email',
-    'password',
-    'role',
-    'status',
-])]
-#[Hidden([
-    'password',
-    'remember_token',
-])]
->>>>>>> bb393d0d59e3b7b4171a66201def415e171419a7
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-<<<<<<< HEAD
-     * Menentukan casting atribut database ke tipe data objek PHP.
-     * Email verified cast ke datetime, password cast ke hashed otomatis saat disimpan.
-=======
-     * Cast attributes.
->>>>>>> bb393d0d59e3b7b4171a66201def415e171419a7
-     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'status',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -53,7 +35,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi ke Profil Mahasiswa (One to One)
+     * Relasi ke Profil Mahasiswa
      */
     public function profilMahasiswa()
     {
@@ -61,7 +43,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi ke Bookmark (One to Many)
+     * Relasi ke Bookmark
      */
     public function bookmarks()
     {
@@ -69,7 +51,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi ke Beasiswa (Admin yang membuat beasiswa)
+     * Relasi ke Beasiswa yang dibuat admin
      */
     public function beasiswa()
     {
@@ -77,7 +59,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user adalah Admin
+     * Cek apakah user admin
      */
     public function isAdmin(): bool
     {
@@ -85,7 +67,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user adalah Mahasiswa
+     * Cek apakah user mahasiswa
      */
     public function isMahasiswa(): bool
     {
