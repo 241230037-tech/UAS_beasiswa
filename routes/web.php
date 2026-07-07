@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\BeasiswaController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Mahasiswa\DashboardController as MahasiswaDashboardController;
+use App\Http\Controllers\Admin\IklanController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,7 +29,7 @@ Route::prefix('admin')
 
         Route::resource('users', UserController::class);
 
-        // Route::resource('iklan', IklanController::class);
+        Route::resource('iklan', IklanController::class);
 
     });
 
