@@ -44,6 +44,8 @@ Route::get('/admin', [PageController::class, 'admin'])->name('admin');
 Route::post('/admin/scholarships', [PageController::class, 'storeScholarship'])->name('admin.scholarships.store');
 Route::put('/admin/scholarships/{id}', [PageController::class, 'updateScholarship'])->name('admin.scholarships.update');
 Route::delete('/admin/scholarships/{id}', [PageController::class, 'deleteScholarship'])->name('admin.scholarships.delete');
+// Rute khusus untuk upload file gambar/logo beasiswa ke direktori storage/public
+Route::post('/admin/scholarships/upload-image', [PageController::class, 'uploadScholarshipImage'])->name('admin.scholarships.upload-image');
 
 // Rute API CRUD untuk Administrator dalam mengelola Spanduk Iklan (Ads Banner)
 Route::post('/admin/ads', [PageController::class, 'storeAd'])->name('admin.ads.store');
@@ -52,10 +54,27 @@ Route::delete('/admin/ads/{id}', [PageController::class, 'deleteAd'])->name('adm
 // Rute khusus untuk upload file gambar iklan ke direktori storage/public
 Route::post('/admin/ads/upload-image', [PageController::class, 'uploadAdImage'])->name('admin.ads.upload-image');
 
+// Rute API CRUD untuk Administrator dalam mengelola Akun Admin Lainnya (Tugas 9)
+Route::post('/admin/admins', [PageController::class, 'storeAdmin'])->name('admin.admins.store');
+Route::put('/admin/admins/{id}', [PageController::class, 'updateAdmin'])->name('admin.admins.update');
+Route::delete('/admin/admins/{id}', [PageController::class, 'deleteAdmin'])->name('admin.admins.delete');
+
+// Rute API CRUD untuk Administrator dalam mengelola Slide Carousel / Slider (Request 2)
+Route::post('/admin/carousel', [PageController::class, 'storeCarouselItem'])->name('admin.carousel.store');
+Route::put('/admin/carousel/{id}', [PageController::class, 'updateCarouselItem'])->name('admin.carousel.update');
+Route::delete('/admin/carousel/{id}', [PageController::class, 'deleteCarouselItem'])->name('admin.carousel.delete');
+Route::post('/admin/carousel/upload-video', [PageController::class, 'uploadCarouselVideo'])->name('admin.carousel.upload-video');
+Route::post('/admin/carousel/upload-video-chunk', [PageController::class, 'uploadCarouselVideoChunk'])->name('admin.carousel.upload-video-chunk');
+// Route streaming video dengan HTTP Range Request — wajib untuk fitur seek/skip di browser
+Route::get('/stream/video/{filename}', [PageController::class, 'streamCarouselVideo'])->name('video.stream')->where('filename', '.+');
+
 // Rute API Otentikasi Berbasis Database (Session-backed)
 Route::post('/api/login', [PageController::class, 'apiLogin'])->name('api.login');
 Route::post('/api/register', [PageController::class, 'apiRegister'])->name('api.register');
 Route::post('/api/logout', [PageController::class, 'apiLogout'])->name('api.logout');
+// Rute API Update Profil dan Password Pengguna Terintegrasi DB (Tugas 10)
+Route::post('/api/update-profile', [PageController::class, 'updateProfile'])->name('api.update-profile');
+
 
 // Rute API Bookmark Berbasis Database
 Route::get('/api/bookmarks', [PageController::class, 'getBookmarks'])->name('api.bookmarks');

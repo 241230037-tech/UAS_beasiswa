@@ -28,6 +28,12 @@ class DatabaseSeeder extends Seeder
             AdBanner::create($ad);
         }
 
+        // Seed carousel items (Tugas 2)
+        $carouselItems = ScholarshipData::carouselItems();
+        foreach ($carouselItems as $item) {
+            \App\Models\CarouselItem::create($item);
+        }
+
         // Seed Akun Admin Tetap (Fixed Admin Accounts)
         User::create([
             'name' => 'Administrator 1',

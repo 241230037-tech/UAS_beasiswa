@@ -68,6 +68,11 @@
     <!-- Menampilkan konten halaman utama yang di-yield oleh page yang meng-extend file layouts ini -->
     @yield('content')
 
+    <!-- Tombol Scroll ke Atas (Back to Top) Melayang - Tugas 7 -->
+    <button type="button" id="btn-back-to-top" class="fixed bottom-6 right-6 z-50 w-11 h-11 bg-[#e53935] hover:bg-[#c62828] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-90 transition-all duration-300 translate-y-20 opacity-0 pointer-events-none cursor-pointer" title="Kembali ke atas">
+        <i data-lucide="arrow-up" class="w-5 h-5 stroke-[3px]"></i>
+    </button>
+
     <!-- Memuat Lucide Icons library untuk render icon SVG secara dinamis -->
     <script src="https://unpkg.com/lucide@latest"></script>
     @stack('scripts')

@@ -224,6 +224,7 @@ class ScholarshipData
                 'bg_to' => '#283593',
                 'tag' => 'PROMO',
                 'link' => '/tutorial',
+                'position' => 'top', // Iklan bagian atas
             ],
             [
                 'title' => 'KURSUS IELTS & TOEFL',
@@ -234,6 +235,7 @@ class ScholarshipData
                 'bg_to' => '#00695c',
                 'tag' => 'HOT',
                 'link' => '/library',
+                'position' => 'top', // Iklan bagian atas
             ],
             [
                 'title' => 'ESSAY BEASISWA',
@@ -244,6 +246,58 @@ class ScholarshipData
                 'bg_to' => '#6a1b9a',
                 'tag' => 'NEW',
                 'link' => '/library',
+                'position' => 'bottom', // Iklan bagian bawah
+            ],
+            [
+                'title' => 'MENTORING BEASISWA',
+                'subtitle' => '1-ON-1!',
+                'description' => 'Konsultasi langsung dengan awardee beasiswa luar negeri',
+                'cta_text' => 'Booking Sekarang',
+                'bg_from' => '#b71c1c',
+                'bg_to' => '#c62828',
+                'tag' => 'EKSKLUSIF',
+                'link' => '/tutorial',
+                'position' => 'bottom', // Iklan bagian bawah
+            ],
+        ];
+    }
+
+    /**
+     * Data awal seeder untuk menu geser (carousel items) - Request 2.
+     */
+    public static function carouselItems(): array
+    {
+        return [
+            [
+                'type' => 'scholarship',
+                'scholarship_id' => 1, // LPDP
+                'order_index' => 0,
+            ],
+            [
+                'type' => 'scholarship',
+                'scholarship_id' => 2, // Kemendikbud
+                'order_index' => 1,
+            ],
+            [
+                'type' => 'scholarship',
+                'scholarship_id' => 3, // KIP Kuliah
+                'order_index' => 2,
+            ],
+            [
+                'type' => 'video',
+                'title' => 'Frame Video 1 (KOSONGAN)',
+                'subtitle' => 'Video Tutorial',
+                'description' => 'Silakan tempel kode embed iframe video tutorial atau pemutar video kustom Anda di sini saat siap.',
+                'video_url' => '',
+                'order_index' => 3,
+            ],
+            [
+                'type' => 'video',
+                'title' => 'Frame Video 2 (KOSONGAN)',
+                'subtitle' => 'Video Tips & Trik',
+                'description' => 'Silakan tempel kode embed iframe video tips & trik atau pemutar video kustom Anda di sini saat siap.',
+                'video_url' => '',
+                'order_index' => 4,
             ],
         ];
     }

@@ -8,12 +8,15 @@ use App\Models\AdBanner;
 use App\Models\ScholarshipApplication;
 use App\Models\User;
 use App\Models\Bookmark;
+use App\Models\CarouselItem; // Model carousel item dinamis - Request 2
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Class PageController
@@ -37,19 +40,29 @@ class PageController extends Controller
     public function home(): View
     {
         $scholarships = [];
-        $adBanners = [];
+        $carouselItems = [];
+        $topAds = [];
+        $bottomAds = [];
 
         try {
             $scholarships = Scholarship::all()->toArray();
-            $adBanners = AdBanner::all()->toArray();
+            // Ambil item carousel terurut sesuai order_index - Request 2
+            $carouselItems = CarouselItem::with('scholarship')->orderBy('order_index', 'asc')->get()->toArray();
+            // Pisahkan iklan atas dan bawah - Request 5
+            $topAds = AdBanner::where('position', 'top')->get()->toArray();
+            $bottomAds = AdBanner::where('position', 'bottom')->get()->toArray();
         } catch (\Throwable $e) {
             $scholarships = [];
-            $adBanners = [];
+            $carouselItems = [];
+            $topAds = [];
+            $bottomAds = [];
         }
 
         return view('pages.home', [
             'scholarships' => $scholarships,
-            'adBanners' => $adBanners,
+            'carouselItems' => $carouselItems,
+            'topAds' => $topAds,
+            'bottomAds' => $bottomAds,
         ]);
     }
 
@@ -221,24 +234,41 @@ class PageController extends Controller
 
     /**
      * Menampilkan Dashboard Admin (Halaman Manajemen).
-     * Mengambil data beasiswa dan iklan untuk dikelola.
+     * Mengambil data beasiswa, iklan, akun admin, dan akun pengguna.
      */
     public function admin(): View
     {
         $scholarships = [];
         $adBanners = [];
+        $admins = [];
+        $users = [];
+        $carouselItems = [];
 
         try {
             $scholarships = Scholarship::all()->toArray();
             $adBanners = AdBanner::all()->toArray();
+            $admins = User::where('role', 'admin')->get()->toArray();
+            $users = User::where('role', 'user')->get()->toArray();
+            $carouselItems = CarouselItem::orderBy('order_index', 'asc')->get()->toArray();
         } catch (\Throwable $e) {
             $scholarships = [];
             $adBanners = [];
+            $admins = [];
+            $users = [];
+            $carouselItems = [];
         }
+
+        $phpUploadMax = ini_get('upload_max_filesize');
+        $phpPostMax = ini_get('post_max_size');
 
         return view('pages.admin', [
             'scholarships' => $scholarships,
             'adBanners' => $adBanners,
+            'admins' => $admins,
+            'users' => $users,
+            'carouselItems' => $carouselItems,
+            'phpUploadMax' => $phpUploadMax,
+            'phpPostMax' => $phpPostMax,
         ]);
     }
 
@@ -327,7 +357,7 @@ class PageController extends Controller
      */
     public function storeAd(Request $request): JsonResponse
     {
-        // Validasi field iklan; image_url bersifat opsional (nullable)
+        // Validasi field iklan; image_url bersifat opsional (nullable), position wajib diisi - Request 5
         $data = $request->validate([
             'title'       => 'required|string',
             'subtitle'    => 'required|string',
@@ -338,6 +368,7 @@ class PageController extends Controller
             'tag'         => 'required|string',
             'link'        => 'required|string',
             'image_url'   => 'nullable|string', // URL gambar iklan (diisi otomatis dari upload)
+            'position'    => 'required|string|in:top,bottom', // Penempatan iklan - Request 5
         ]);
 
         $ad = AdBanner::create($data);
@@ -359,7 +390,7 @@ class PageController extends Controller
             return response()->json(['success' => false, 'message' => 'Iklan tidak ditemukan.'], 404);
         }
 
-        // Validasi field iklan; image_url opsional, tidak wajib diisi ulang saat edit
+        // Validasi field iklan; position wajib diisi - Request 5
         $data = $request->validate([
             'title'       => 'required|string',
             'subtitle'    => 'required|string',
@@ -370,6 +401,7 @@ class PageController extends Controller
             'tag'         => 'required|string',
             'link'        => 'required|string',
             'image_url'   => 'nullable|string', // URL gambar iklan (opsional saat update)
+            'position'    => 'required|string|in:top,bottom', // Penempatan iklan - Request 5
         ]);
 
         $ad->update($data);
@@ -394,19 +426,246 @@ class PageController extends Controller
      */
     public function uploadAdImage(Request $request): JsonResponse
     {
-        // Validasi: file wajib ada, harus berupa gambar, maksimal ukuran 2MB (2048 KB)
+        // Validasi: berkas wajib ada, berupa gambar atau video singkat (mp4/webm/mov), maks 15MB
         $request->validate([
-            'image' => 'required|image|max:2048',
+            'image' => 'required|file|mimes:jpeg,png,jpg,gif,svg,mp4,webm,ogg,mov|max:15360',
         ]);
 
         // Simpan file ke storage/app/public/ad-images/ dengan nama acak yang aman
         $path = $request->file('image')->store('ad-images', 'public');
 
-        // Kembalikan URL publik yang bisa langsung digunakan di tag <img> atau disimpan di database
+        // Kembalikan URL publik yang bisa langsung digunakan di tag <img> atau <video>
         return response()->json([
             'success'   => true,
             'url'       => asset('storage/' . $path),
             'path'      => $path,
+        ]);
+    }
+
+    /**
+     * Streaming video carousel dengan dukungan HTTP Range Request (206 Partial Content).
+     * Inilah yang memungkinkan browser untuk seek/skip video ke menit manapun.
+     * Tanpa handler ini, artisan serve tidak mengembalikan header Range yang benar.
+     */
+    public function streamCarouselVideo(Request $request, string $filename): StreamedResponse|\Illuminate\Http\Response
+    {
+        // Sanitasi nama file untuk keamanan — tolak path traversal
+        $filename = basename($filename);
+        $filePath = storage_path('app/public/carousel-videos/' . $filename);
+
+        if (!file_exists($filePath) || !is_file($filePath)) {
+            abort(404, 'Video tidak ditemukan.');
+        }
+
+        $fileSize   = filesize($filePath);
+        $mimeType   = mime_content_type($filePath) ?: 'video/mp4';
+        // Pastikan mime type benar untuk video
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mimeMap = [
+            'mp4'  => 'video/mp4',
+            'webm' => 'video/webm',
+            'ogg'  => 'video/ogg',
+            'mov'  => 'video/quicktime',
+            'avi'  => 'video/x-msvideo',
+        ];
+        if (isset($mimeMap[$ext])) {
+            $mimeType = $mimeMap[$ext];
+        }
+
+        $rangeHeader = $request->header('Range');
+
+        if (!$rangeHeader) {
+            // Tidak ada Range header — kirim seluruh file dengan header Accept-Ranges
+            return response()->stream(function () use ($filePath, $fileSize) {
+                $handle = fopen($filePath, 'rb');
+                while (!feof($handle)) {
+                    echo fread($handle, 1024 * 64);
+                    flush();
+                    ob_flush();
+                }
+                fclose($handle);
+            }, 200, [
+                'Content-Type'   => $mimeType,
+                'Content-Length' => $fileSize,
+                'Accept-Ranges'  => 'bytes',
+                'Cache-Control'  => 'public, max-age=3600',
+            ]);
+        }
+
+        // Parse Range header: "bytes=START-END"
+        preg_match('/bytes=(\d+)-(\d*)/', $rangeHeader, $matches);
+        $start = isset($matches[1]) ? (int) $matches[1] : 0;
+        $end   = isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : $fileSize - 1;
+        $end   = min($end, $fileSize - 1);
+
+        if ($start > $end || $start >= $fileSize) {
+            return response('Requested Range Not Satisfiable', 416, [
+                'Content-Range' => "bytes */{$fileSize}",
+            ]);
+        }
+
+        $length = $end - $start + 1;
+
+        // Kembalikan Partial Content (206) dengan potongan byte yang diminta
+        return response()->stream(function () use ($filePath, $start, $length) {
+            $handle = fopen($filePath, 'rb');
+            fseek($handle, $start);
+            $remaining = $length;
+            while (!feof($handle) && $remaining > 0) {
+                $chunkSize = min(1024 * 64, $remaining); // 64KB per chunk
+                $data = fread($handle, $chunkSize);
+                echo $data;
+                $remaining -= strlen($data);
+                flush();
+                ob_flush();
+            }
+            fclose($handle);
+        }, 206, [
+            'Content-Type'   => $mimeType,
+            'Content-Range'  => "bytes {$start}-{$end}/{$fileSize}",
+            'Content-Length' => $length,
+            'Accept-Ranges'  => 'bytes',
+            'Cache-Control'  => 'public, max-age=3600',
+        ]);
+    }
+
+    /**
+     * Mengupload file video lokal untuk slide carousel ke direktori storage/public/carousel-videos (Request 7).
+     * Mendukung upload biasa (untuk file kecil) dan chunked upload (untuk file besar).
+     * Mengembalikan URL publik file yang disimpan ke database.
+     */
+    public function uploadCarouselVideo(Request $request): JsonResponse
+    {
+        // Validasi: berkas wajib ada, berupa video (mp4/webm/mov/avi/ogg), maks sesuai php.ini
+        $request->validate([
+            'video' => 'required|file|mimes:mp4,webm,ogg,mov,avi',
+        ]);
+
+        // Simpan file ke storage/app/public/carousel-videos/
+        $path = $request->file('video')->store('carousel-videos', 'public');
+
+        // Kembalikan URL publik berkas video
+        return response()->json([
+            'success'   => true,
+            'url'       => asset('storage/' . $path),
+            'path'      => $path,
+        ]);
+    }
+
+    /**
+     * Menerima satu potongan (chunk) video dan menyimpannya sementara,
+     * lalu menggabungkan seluruh potongan menjadi satu file utuh ketika semua chunk diterima.
+     * Ini memungkinkan upload video berukuran sangat besar (melebihi upload_max_filesize PHP)
+     * karena setiap request hanya membawa potongan kecil (~2MB).
+     */
+    public function uploadCarouselVideoChunk(Request $request): JsonResponse
+    {
+        // Validasi potongan chunk yang diterima
+        $request->validate([
+            'chunk'        => 'required|file',
+            'chunk_index'  => 'required|integer|min:0',
+            'total_chunks' => 'required|integer|min:1',
+            'filename'     => 'required|string',
+            'upload_id'    => 'required|string',
+        ]);
+
+        $chunkIndex  = (int) $request->input('chunk_index');
+        $totalChunks = (int) $request->input('total_chunks');
+        $uploadId    = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->input('upload_id'));
+        $originalName = $request->input('filename');
+
+        // Validasi ekstensi file asli
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowedExt = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
+        if (!in_array($ext, $allowedExt)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format video tidak didukung. Gunakan MP4, WebM, OGG, MOV, atau AVI.',
+            ], 422);
+        }
+
+        // Direktori sementara untuk menyimpan chunk
+        $tempDir = storage_path('app/chunks/' . $uploadId);
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        // Simpan chunk ke direktori temp
+        $chunkPath = $tempDir . '/chunk_' . $chunkIndex;
+        $request->file('chunk')->move($tempDir, 'chunk_' . $chunkIndex);
+
+        // Cek apakah semua chunk sudah diterima
+        $receivedChunks = count(glob($tempDir . '/chunk_*'));
+        if ($receivedChunks < $totalChunks) {
+            // Belum semua chunk diterima, beritahu klien untuk lanjut kirim
+            return response()->json([
+                'success'     => true,
+                'done'        => false,
+                'received'    => $receivedChunks,
+                'total'       => $totalChunks,
+                'message'     => "Chunk {$chunkIndex} diterima ({$receivedChunks}/{$totalChunks}).",
+            ]);
+        }
+
+        // Semua chunk sudah diterima — gabungkan menjadi satu file
+        $finalFilename = $uploadId . '.' . $ext;
+        $finalDir = storage_path('app/public/carousel-videos');
+        if (!file_exists($finalDir)) {
+            mkdir($finalDir, 0755, true);
+        }
+        $finalPath = $finalDir . '/' . $finalFilename;
+
+        $outputFile = fopen($finalPath, 'wb');
+        for ($i = 0; $i < $totalChunks; $i++) {
+            $chunkFile = $tempDir . '/chunk_' . $i;
+            if (!file_exists($chunkFile)) {
+                fclose($outputFile);
+                // Hapus file yang sudah dibuat jika gagal
+                if (file_exists($finalPath)) unlink($finalPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => "Potongan video ke-{$i} hilang. Silakan upload ulang.",
+                ], 500);
+            }
+            $chunkHandle = fopen($chunkFile, 'rb');
+            stream_copy_to_stream($chunkHandle, $outputFile);
+            fclose($chunkHandle);
+        }
+        fclose($outputFile);
+
+        // Hapus direktori chunk sementara
+        array_map('unlink', glob($tempDir . '/chunk_*'));
+        rmdir($tempDir);
+
+        $publicPath = 'carousel-videos/' . $finalFilename;
+
+        return response()->json([
+            'success' => true,
+            'done'    => true,
+            'url'     => asset('storage/' . $publicPath),
+            'path'    => $publicPath,
+            'message' => 'Video berhasil diunggah!',
+        ]);
+    }
+
+    /**
+     * Mengupload file logo/gambar beasiswa ke direktori storage/public/scholarship-logos.
+     * Mengembalikan URL publik file yang disimpan ke database.
+     */
+    public function uploadScholarshipImage(Request $request): JsonResponse
+    {
+        // Validasi file logo beasiswa (harus berupa gambar, maksimal 2MB)
+        $request->validate([
+            'image' => 'required|image|max:2048',
+        ]);
+
+        // Simpan file ke storage/app/public/scholarship-logos/
+        $path = $request->file('image')->store('scholarship-logos', 'public');
+
+        return response()->json([
+            'success' => true,
+            'url'     => asset('storage/' . $path),
+            'path'    => $path,
         ]);
     }
 
@@ -433,6 +692,183 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Iklan berhasil dihapus!'
+        ]);
+    }
+
+    /**
+     * Menyimpan data akun admin baru ke database (POST) - Tugas 9.
+     */
+    public function storeAdmin(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|min:3',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        // Simpan admin dengan role 'admin'
+        $admin = User::create([
+            'name' => trim($data['name']),
+            'email' => trim($data['email']),
+            'password' => Hash::make($data['password']),
+            'role' => 'admin',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun admin berhasil ditambahkan!',
+            'data' => [
+                'id' => $admin->id,
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'role' => $admin->role,
+            ]
+        ]);
+    }
+
+    /**
+     * Memperbarui data akun admin berdasarkan ID (PUT/PATCH) - Tugas 9.
+     */
+    public function updateAdmin(Request $request, int $id): JsonResponse
+    {
+        // Cari admin berdasarkan ID dan role 'admin'
+        $admin = User::where('id', $id)->where('role', 'admin')->first();
+        if (!$admin) {
+            return response()->json(['success' => false, 'message' => 'Akun admin tidak ditemukan.'], 404);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|min:3',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:6',
+        ]);
+
+        $admin->name = trim($data['name']);
+        $admin->email = trim($data['email']);
+        
+        // Perbarui password hanya jika diinputkan
+        if (!empty($data['password'])) {
+            $admin->password = Hash::make($data['password']);
+        }
+
+        $admin->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun admin berhasil diperbarui!',
+            'data' => [
+                'id' => $admin->id,
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'role' => $admin->role,
+            ]
+        ]);
+    }
+
+    /**
+     * Menghapus data akun admin berdasarkan ID (DELETE) - Tugas 9.
+     */
+    public function deleteAdmin(int $id): JsonResponse
+    {
+        // Mencegah penghapusan akun diri sendiri yang sedang login
+        if (Auth::id() === $id) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak dapat menghapus akun Anda sendiri yang sedang digunakan.'], 400);
+        }
+
+        $admin = User::where('id', $id)->where('role', 'admin')->first();
+        if (!$admin) {
+            return response()->json(['success' => false, 'message' => 'Akun admin tidak ditemukan.'], 404);
+        }
+
+        $admin->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun admin berhasil dihapus!'
+        ]);
+    }
+
+    /**
+     * Menyimpan data item carousel baru (POST) - Request 2.
+     */
+    public function storeCarouselItem(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type'           => 'required|string|in:scholarship,video',
+            'scholarship_id' => 'nullable|integer|exists:scholarships,id',
+            'title'          => 'nullable|string',
+            'subtitle'       => 'nullable|string',
+            'description'    => 'nullable|string',
+            'image_url'      => 'nullable|string',
+            'video_url'      => 'nullable|string',
+            'link'           => 'nullable|string',
+            'order_index'    => 'nullable|integer',
+        ]);
+
+        $item = CarouselItem::create($data);
+
+        // Jika bertipe beasiswa, pastikan relasi termuat
+        if ($item->type === 'scholarship') {
+            $item->load('scholarship');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Slide carousel berhasil ditambahkan!',
+            'data'    => $item
+        ]);
+    }
+
+    /**
+     * Memperbarui data item carousel berdasarkan ID (PUT/PATCH) - Request 2.
+     */
+    public function updateCarouselItem(Request $request, int $id): JsonResponse
+    {
+        $item = CarouselItem::find($id);
+        if (!$item) {
+            return response()->json(['success' => false, 'message' => 'Slide tidak ditemukan.'], 404);
+        }
+
+        $data = $request->validate([
+            'type'           => 'required|string|in:scholarship,video',
+            'scholarship_id' => 'nullable|integer|exists:scholarships,id',
+            'title'          => 'nullable|string',
+            'subtitle'       => 'nullable|string',
+            'description'    => 'nullable|string',
+            'image_url'      => 'nullable|string',
+            'video_url'      => 'nullable|string',
+            'link'           => 'nullable|string',
+            'order_index'    => 'nullable|integer',
+        ]);
+
+        $item->update($data);
+
+        if ($item->type === 'scholarship') {
+            $item->load('scholarship');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Slide carousel berhasil diperbarui!',
+            'data'    => $item
+        ]);
+    }
+
+    /**
+     * Menghapus data item carousel berdasarkan ID (DELETE) - Request 2.
+     */
+    public function deleteCarouselItem(int $id): JsonResponse
+    {
+        $item = CarouselItem::find($id);
+        if (!$item) {
+            return response()->json(['success' => false, 'message' => 'Slide tidak ditemukan.'], 404);
+        }
+
+        $item->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Slide carousel berhasil dihapus!'
         ]);
     }
 
@@ -491,19 +927,17 @@ class PageController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
+        // Simpan data pengguna baru ke database tanpa otomatis login
         $user = User::create([
             'name' => trim($data['name']),
             'email' => trim($data['email']),
             'password' => Hash::make($data['password']),
-            'role' => 'user', // Default pendaftar baru adalah 'user'
+            'role' => 'user', // Akun baru memiliki role 'user'
         ]);
-
-        // Otomatis loginkan setelah registrasi
-        Auth::login($user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Registrasi berhasil!',
+            'message' => 'Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.',
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -586,5 +1020,49 @@ class PageController extends Controller
                 'message' => 'Beasiswa ditambahkan ke Bookmark!'
             ]);
         }
+    }
+
+    /**
+     * API Update Profil dan Ganti Password Pengguna Terintegrasi DB (Tugas 10).
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Sesi Anda telah berakhir. Silakan login kembali.'], 401);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|min:3',
+            'current_password' => 'nullable|string',
+            'new_password' => 'nullable|string|min:6',
+        ]);
+
+        $user->name = trim($data['name']);
+
+        // Jika pengguna ingin mengganti kata sandinya
+        if (!empty($data['current_password'])) {
+            // Verifikasi kecocokan password lama di database
+            if (!Hash::check($data['current_password'], $user->password)) {
+                return response()->json(['success' => false, 'message' => 'Kata sandi saat ini yang Anda masukkan salah.'], 422);
+            }
+
+            if (empty($data['new_password'])) {
+                return response()->json(['success' => false, 'message' => 'Silakan masukkan kata sandi baru Anda.'], 422);
+            }
+
+            $user->password = Hash::make($data['new_password']);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil dan kata sandi berhasil diperbarui!',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]
+        ]);
     }
 }

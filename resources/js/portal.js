@@ -254,16 +254,81 @@
       });
     });
 
+    // Toggle section ganti password (Tugas 10)
+    var btnTogglePwd = document.getElementById('btn-toggle-password-section');
+    var pwdSection = document.getElementById('password-section');
+    var chevronIcon = document.getElementById('icon-password-chevron');
+    
+    if (btnTogglePwd && pwdSection) {
+      btnTogglePwd.addEventListener('click', function() {
+        var isHidden = pwdSection.classList.contains('hidden');
+        pwdSection.classList.toggle('hidden', !isHidden);
+        if (chevronIcon) {
+          chevronIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      });
+    }
+
     if (btnSaveProfile) btnSaveProfile.addEventListener('click', function () {
       var name = document.getElementById('modal-edit-name').value.trim();
+      var currentPassword = document.getElementById('modal-current-password') ? document.getElementById('modal-current-password').value : '';
+      var newPassword = document.getElementById('modal-new-password') ? document.getElementById('modal-new-password').value : '';
+      var confirmPassword = document.getElementById('modal-confirm-password') ? document.getElementById('modal-confirm-password').value : '';
+
       if (name.length < 3) {
         toast('Gagal menyimpan! Nama minimal 3 karakter.', 'error');
         return;
       }
-      localStorage.setItem('userName', name);
-      syncAuthUI();
-      toast('Pengaturan profil berhasil disimpan!', 'success');
-      closeAccountModal();
+
+      var payload = { name: name };
+
+      // Validasi input password jika diisi
+      if (currentPassword) {
+        if (!newPassword || newPassword.length < 6) {
+          toast('Gagal! Kata sandi baru minimal 6 karakter.', 'error');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          toast('Gagal! Konfirmasi kata sandi baru tidak cocok.', 'error');
+          return;
+        }
+        payload.current_password = currentPassword;
+        payload.new_password = newPassword;
+      }
+
+      fetch('/api/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(function(res) {
+        if (!res.ok) {
+          return res.json().then(function(err) { throw err; });
+        }
+        return res.json();
+      })
+      .then(function(data) {
+        if (data.success) {
+          localStorage.setItem('userName', data.user.name);
+          syncAuthUI();
+          toast(data.message || 'Profil berhasil disimpan!', 'success');
+          
+          // Reset kolom input password dan sembunyikan section
+          if (pwdSection) pwdSection.classList.add('hidden');
+          if (chevronIcon) chevronIcon.style.transform = 'rotate(0deg)';
+          if (document.getElementById('modal-current-password')) document.getElementById('modal-current-password').value = '';
+          if (document.getElementById('modal-new-password')) document.getElementById('modal-new-password').value = '';
+          if (document.getElementById('modal-confirm-password')) document.getElementById('modal-confirm-password').value = '';
+
+          closeAccountModal();
+        }
+      })
+      .catch(function(err) {
+        toast(err.message || 'Gagal menyimpan profil & kata sandi.', 'error');
+      });
     });
 
     function handleAvatarUpload(file) {
@@ -689,23 +754,36 @@
       })
       .then(function(data) {
         if (data.success) {
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('isAdmin', data.user.role === 'admin' ? 'true' : 'false');
-          localStorage.setItem('userEmail', data.user.email);
-          localStorage.setItem('userName', data.user.name);
+          if (url === '/api/register') {
+            // Untuk registrasi, jangan langsung login. Tampilkan toast, ubah mode ke login, dan isi email
+            toast(data.message || 'Registrasi berhasil!', 'success');
+            isLogin = true;
+            updateUIState();
+            var emailFieldInput = document.getElementById('email-input');
+            if (emailFieldInput) emailFieldInput.value = email;
+            var nameFieldInput = document.getElementById('name-input');
+            if (nameFieldInput) nameFieldInput.value = '';
+            passwordInput.value = '';
+          } else {
+            // Untuk login (user/admin), simpan status di LocalStorage
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('isAdmin', data.user.role === 'admin' ? 'true' : 'false');
+            localStorage.setItem('userEmail', data.user.email);
+            localStorage.setItem('userName', data.user.name);
 
-          // Sinkronisasi bookmark dari database SQLite ke LocalStorage saat login berhasil
-          fetch('/api/bookmarks')
-            .then(function(r) { return r.json(); })
-            .then(function(bms) {
-              localStorage.setItem('bookmarks', JSON.stringify(bms));
-            })
-            .finally(function() {
-              toast(data.message || 'Berhasil!', 'success');
-              setTimeout(function() {
-                window.location.href = (data.user.role === 'admin') ? '/admin' : redirect;
-              }, 1000);
-            });
+            // Sinkronisasi bookmark dari database SQLite ke LocalStorage saat login berhasil
+            fetch('/api/bookmarks')
+              .then(function(r) { return r.json(); })
+              .then(function(bms) {
+                localStorage.setItem('bookmarks', JSON.stringify(bms));
+              })
+              .finally(function() {
+                toast(data.message || 'Berhasil masuk!', 'success');
+                setTimeout(function() {
+                  window.location.href = (data.user.role === 'admin') ? '/admin' : redirect;
+                }, 1000);
+              });
+          }
         }
       })
       .catch(function(err) {
@@ -1204,30 +1282,269 @@
 
     var tabScholarships = document.getElementById('tab-manage-scholarships');
     var tabAds = document.getElementById('tab-manage-ads');
+    var tabCarousel = document.getElementById('tab-manage-carousel'); // Request 2
+    var tabAdmins = document.getElementById('tab-manage-admins');
+    var tabUsers = document.getElementById('tab-view-users');
+
     var sectionScholarships = document.getElementById('section-scholarships');
     var sectionAds = document.getElementById('section-ads');
+    var sectionCarousel = document.getElementById('section-carousel'); // Request 2
+    var sectionAdmins = document.getElementById('section-admins');
+    var sectionUsers = document.getElementById('section-users');
+
     var btnAddScholarship = document.getElementById('btn-add-scholarship');
     var btnAddAd = document.getElementById('btn-add-ad');
+    var btnAddCarousel = document.getElementById('btn-add-carousel'); // Request 2
+    var btnAddAdmin = document.getElementById('btn-add-admin');
 
-    if (tabScholarships && tabAds) {
-      tabScholarships.addEventListener('click', function() {
-        tabScholarships.className = 'px-5 py-3 border-b-2 border-[#e53935] font-black text-xs text-[#e53935] tracking-wide uppercase transition-all';
-        tabAds.className = 'px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all';
-        sectionScholarships.classList.remove('hidden');
-        sectionAds.classList.add('hidden');
-        btnAddScholarship.classList.remove('hidden');
-        btnAddAd.classList.add('hidden');
-      });
+    // Menghubungkan tabs dengan elemen tombol aksinya masing-masing (Tugas 9)
+    function setActiveTab(activeTabId) {
+      var tabs = [
+        { id: 'tab-manage-scholarships', btn: tabScholarships, section: sectionScholarships, addBtn: btnAddScholarship },
+        { id: 'tab-manage-ads', btn: tabAds, section: sectionAds, addBtn: btnAddAd },
+        { id: 'tab-manage-carousel', btn: tabCarousel, section: sectionCarousel, addBtn: btnAddCarousel },
+        { id: 'tab-manage-admins', btn: tabAdmins, section: sectionAdmins, addBtn: btnAddAdmin },
+        { id: 'tab-view-users', btn: tabUsers, section: sectionUsers, addBtn: null }
+      ];
 
-      tabAds.addEventListener('click', function() {
-        tabAds.className = 'px-5 py-3 border-b-2 border-[#e53935] font-black text-xs text-[#e53935] tracking-wide uppercase transition-all';
-        tabScholarships.className = 'px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all';
-        sectionAds.classList.remove('hidden');
-        sectionScholarships.classList.add('hidden');
-        btnAddScholarship.classList.add('hidden');
-        btnAddAd.classList.remove('hidden');
+      tabs.forEach(function(tab) {
+        if (!tab.btn) return;
+        if (tab.id === activeTabId) {
+          tab.btn.className = 'px-5 py-3 border-b-2 border-[#e53935] font-black text-xs text-[#e53935] tracking-wide uppercase transition-all';
+          if (tab.section) tab.section.classList.remove('hidden');
+          if (tab.addBtn) tab.addBtn.classList.remove('hidden');
+        } else {
+          tab.btn.className = 'px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all';
+          if (tab.section) tab.section.classList.add('hidden');
+          if (tab.addBtn) tab.addBtn.classList.add('hidden');
+        }
       });
     }
+
+    if (tabScholarships) tabScholarships.addEventListener('click', function() { setActiveTab('tab-manage-scholarships'); });
+    if (tabAds) tabAds.addEventListener('click', function() { setActiveTab('tab-manage-ads'); });
+    if (tabCarousel) tabCarousel.addEventListener('click', function() { setActiveTab('tab-manage-carousel'); });
+    if (tabAdmins) tabAdmins.addEventListener('click', function() { setActiveTab('tab-manage-admins'); });
+    if (tabUsers) tabUsers.addEventListener('click', function() { setActiveTab('tab-view-users'); });
+
+    // Memuat data akun admin dan pengguna dari data attribute (Tugas 9)
+    var admins = JSON.parse(page.dataset.initialAdmins || '[]');
+    var users = JSON.parse(page.dataset.initialUsers || '[]');
+    var carouselItems = JSON.parse(page.dataset.initialCarouselItems || '[]'); // Request 2
+
+    // ================= CRUD AKUN ADMINISTRATOR =================
+    var tbodyAdmin = document.getElementById('admin-admins-table-body');
+    var emptyAdmin = document.getElementById('admin-empty-admins');
+    var searchInputAdmin = document.getElementById('admin-search-admins');
+
+    function renderAdminsTable(filterText) {
+      var list = admins;
+      if (filterText) {
+        var q = filterText.toLowerCase();
+        list = list.filter(function(ad) {
+          return ad.name.toLowerCase().includes(q) || ad.email.toLowerCase().includes(q);
+        });
+      }
+
+      var statAdmins = document.getElementById('stat-total-admins');
+      if (statAdmins) statAdmins.textContent = admins.length;
+
+      if (!tbodyAdmin) return;
+
+      if (list.length === 0) {
+        tbodyAdmin.innerHTML = '';
+        if (emptyAdmin) emptyAdmin.classList.remove('hidden');
+        return;
+      }
+      if (emptyAdmin) emptyAdmin.classList.add('hidden');
+
+      tbodyAdmin.innerHTML = list.map(function(ad) {
+        return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
+          '<td class="p-4 font-semibold text-muted-foreground">' + ad.id + '</td>' +
+          '<td class="p-4 font-bold text-foreground">' + ad.name + '</td>' +
+          '<td class="p-4 text-muted-foreground">' + ad.email + '</td>' +
+          '<td class="p-4"><span class="px-2 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">ADMIN</span></td>' +
+          '<td class="p-4 text-right whitespace-nowrap">' +
+          '<button type="button" class="btn-edit-admin text-blue-500 hover:text-blue-700 font-bold mr-3" data-id="' + ad.id + '">Edit</button>' +
+          '<button type="button" class="btn-delete-admin text-red-500 hover:text-red-700 font-bold" data-id="' + ad.id + '">Hapus</button>' +
+          '</td></tr>';
+      }).join('');
+
+      tbodyAdmin.querySelectorAll('.btn-edit-admin').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var adId = parseInt(btn.dataset.id);
+          var ad = admins.find(function(item) { return item.id === adId; });
+          if (!ad) return;
+
+          document.getElementById('admin-field-id').value = ad.id;
+          document.getElementById('admin-field-name').value = ad.name;
+          document.getElementById('admin-field-email').value = ad.email;
+          document.getElementById('admin-field-password').value = '';
+          
+          document.getElementById('admin-field-password').required = false;
+          document.getElementById('label-admin-password').textContent = 'Kata Sandi (Kosongkan jika tidak diubah)';
+          document.getElementById('admin-modal-title').textContent = 'Edit Akun Administrator';
+          
+          if (modalAdminCRUD) modalAdminCRUD.classList.remove('hidden');
+        });
+      });
+
+      tbodyAdmin.querySelectorAll('.btn-delete-admin').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var adId = parseInt(btn.dataset.id);
+          if (confirm('Apakah Anda yakin ingin menghapus akun administrator ini?')) {
+            fetch('/admin/admins/' + adId, {
+              method: 'DELETE',
+              headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                admins = admins.filter(function(item) { return item.id !== adId; });
+                toast(data.message, 'success');
+                renderAdminsTable(searchInputAdmin ? searchInputAdmin.value : '');
+              } else {
+                toast(data.message || 'Gagal menghapus akun admin.', 'error');
+              }
+            })
+            .catch(function() {
+              toast('Gagal melakukan penghapusan akun.', 'error');
+            });
+          }
+        });
+      });
+    }
+
+    // ================= MENAMPILKAN DATA AKUN PENGGUNA =================
+    var tbodyUser = document.getElementById('admin-users-table-body');
+    var emptyUser = document.getElementById('admin-empty-users');
+    var searchInputUser = document.getElementById('admin-search-users');
+
+    function renderUsersTable(filterText) {
+      var list = users;
+      if (filterText) {
+        var q = filterText.toLowerCase();
+        list = list.filter(function(u) {
+          return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        });
+      }
+
+      var statUsers = document.getElementById('stat-total-users');
+      if (statUsers) statUsers.textContent = users.length;
+
+      if (!tbodyUser) return;
+
+      if (list.length === 0) {
+        tbodyUser.innerHTML = '';
+        if (emptyUser) emptyUser.classList.remove('hidden');
+        return;
+      }
+      if (emptyUser) emptyUser.classList.add('hidden');
+
+      tbodyUser.innerHTML = list.map(function(u) {
+        var dateJoined = u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+        return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
+          '<td class="p-4 font-semibold text-muted-foreground">' + u.id + '</td>' +
+          '<td class="p-4 font-bold text-foreground">' + u.name + '</td>' +
+          '<td class="p-4 text-muted-foreground">' + u.email + '</td>' +
+          '<td class="p-4 text-muted-foreground font-semibold">' + dateJoined + '</td>' +
+          '<td class="p-4"><span class="px-2 py-0.5 rounded bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400 text-[10px] font-bold uppercase tracking-wider">USER</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    // Modal & Form CRUD Admin
+    var modalAdminCRUD = document.getElementById('admin-crud-modal');
+    var btnCloseAdminModal = document.getElementById('btn-close-admin-modal');
+    var backdropAdminModal = document.getElementById('admin-crud-modal-backdrop');
+    var formAdminCRUD = document.getElementById('admin-crud-form');
+
+    if (btnAddAdmin) {
+      btnAddAdmin.addEventListener('click', function() {
+        if (formAdminCRUD) formAdminCRUD.reset();
+        document.getElementById('admin-field-id').value = '';
+        document.getElementById('admin-field-password').required = true;
+        document.getElementById('label-admin-password').textContent = 'Kata Sandi *';
+        document.getElementById('admin-modal-title').textContent = 'Tambah Administrator Baru';
+        if (modalAdminCRUD) modalAdminCRUD.classList.remove('hidden');
+      });
+    }
+
+    function closeAdminModal() {
+      if (modalAdminCRUD) modalAdminCRUD.classList.add('hidden');
+    }
+    if (btnCloseAdminModal) btnCloseAdminModal.addEventListener('click', closeAdminModal);
+    if (backdropAdminModal) backdropAdminModal.addEventListener('click', closeAdminModal);
+
+    if (formAdminCRUD) {
+      formAdminCRUD.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('admin-field-id').value;
+        var name = document.getElementById('admin-field-name').value.trim();
+        var email = document.getElementById('admin-field-email').value.trim();
+        var password = document.getElementById('admin-field-password').value;
+
+        if (!id && password.length < 6) {
+          toast('Gagal! Kata sandi akun admin baru minimal 6 karakter.', 'error');
+          return;
+        }
+
+        var payload = { name: name, email: email };
+        if (password) payload.password = password;
+
+        var url = id ? '/admin/admins/' + id : '/admin/admins';
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) {
+          if (!res.ok) {
+            return res.json().then(function(err) { throw err; });
+          }
+          return res.json();
+        })
+        .then(function(data) {
+          if (data.success) {
+            if (id) {
+              var parsedId = parseInt(id);
+              admins = admins.map(function(item) { return item.id === parsedId ? data.data : item; });
+            } else {
+              admins.push(data.data);
+            }
+            toast(data.message, 'success');
+            closeAdminModal();
+            renderAdminsTable(searchInputAdmin ? searchInputAdmin.value : '');
+          } else {
+            toast(data.message || 'Gagal menyimpan data.', 'error');
+          }
+        })
+        .catch(function(err) {
+          toast(err.message || 'Terjadi kesalahan sistem.', 'error');
+        });
+      });
+    }
+
+    if (searchInputAdmin) {
+      searchInputAdmin.addEventListener('input', function(e) {
+        renderAdminsTable(e.target.value);
+      });
+    }
+
+    if (searchInputUser) {
+      searchInputUser.addEventListener('input', function(e) {
+        renderUsersTable(e.target.value);
+      });
+    }
+
+    // Panggil render tabel awal untuk admin dan pengguna
+    renderAdminsTable();
+    renderUsersTable();
 
     var scholarships = JSON.parse(page.dataset.initialScholarships || '[]');
     var modalS = document.getElementById('crud-modal');
@@ -1288,13 +1605,16 @@
           document.getElementById('field-deadline').value = s.deadline || '';
           document.getElementById('field-status').value = s.status || 'Dibuka';
           
-          var logoSelect = document.getElementById('field-logo-select');
-          if (logoSelect) {
-            var matchingOption = Array.from(logoSelect.options).find(function(opt) {
-              return opt.value.includes(s.image.split('/').pop());
-            });
-            if (matchingOption) logoSelect.value = matchingOption.value;
+          // Tampilkan preview logo yang diunggah jika ada
+          var preview = document.getElementById('scholarship-image-preview');
+          var container = document.getElementById('scholarship-image-preview-container');
+          if (preview && s.image) {
+            preview.src = s.image;
+            if (container) container.classList.remove('hidden');
+          } else if (container) {
+            container.classList.add('hidden');
           }
+
           document.getElementById('field-image').value = s.image;
           document.getElementById('field-external-link').value = s.external_link || s.externalLink || '';
           document.getElementById('field-updated-ago').value = s.updated_ago || s.updatedAgo || '2 jam lalu';
@@ -1331,19 +1651,68 @@
       btnAddScholarship.addEventListener('click', function() {
         formS.reset();
         document.getElementById('field-id').value = '';
+        document.getElementById('field-image').value = '';
+        var container = document.getElementById('scholarship-image-preview-container');
+        if (container) container.classList.add('hidden');
         document.getElementById('crud-modal-title').textContent = 'Tambah Beasiswa Baru';
         modalS.classList.remove('hidden');
       });
     }
 
-    function closeModalS() { modalS.classList.add('hidden'); }
+    function closeModalS() {
+      modalS.classList.add('hidden');
+      var container = document.getElementById('scholarship-image-preview-container');
+      if (container) container.classList.add('hidden');
+    }
     if (btnCloseModalS) btnCloseModalS.addEventListener('click', closeModalS);
     if (modalBackdropS) modalBackdropS.addEventListener('click', closeModalS);
 
-    var logoSelect = document.getElementById('field-logo-select');
-    if (logoSelect) {
-      logoSelect.addEventListener('change', function() {
-        document.getElementById('field-image').value = logoSelect.value;
+    // Mengatur unggah logo beasiswa secara dinamis (Tugas 6)
+    var btnUploadSImage = document.getElementById('btn-scholarship-upload-image');
+    var sImageFileInput = document.getElementById('field-logo-file');
+    var sImageUrlInput  = document.getElementById('field-image');
+    var sImagePreview   = document.getElementById('scholarship-image-preview');
+    var sImageContainer = document.getElementById('scholarship-image-preview-container');
+    var sUploadStatus   = document.getElementById('scholarship-upload-status');
+
+    if (btnUploadSImage && sImageFileInput) {
+      btnUploadSImage.addEventListener('click', function() {
+        sImageFileInput.click();
+      });
+
+      sImageFileInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        if (sUploadStatus) sUploadStatus.classList.remove('hidden');
+        if (sImageContainer) sImageContainer.classList.add('hidden');
+
+        var formData = new FormData();
+        formData.append('image', file);
+
+        fetch('/admin/scholarships/upload-image', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+          body: formData
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success) {
+            if (sImageUrlInput) sImageUrlInput.value = data.url;
+            if (sImagePreview) sImagePreview.src = data.url;
+            if (sImageContainer) sImageContainer.classList.remove('hidden');
+            toast('Logo beasiswa berhasil diupload!', 'success');
+          } else {
+            toast('Gagal mengupload logo beasiswa.', 'error');
+          }
+        })
+        .catch(function() {
+          toast('Terjadi kesalahan saat mengupload logo beasiswa.', 'error');
+        })
+        .finally(function() {
+          if (sUploadStatus) sUploadStatus.classList.add('hidden');
+          sImageFileInput.value = '';
+        });
       });
     }
 
@@ -1351,7 +1720,12 @@
       formS.addEventListener('submit', function(e) {
         e.preventDefault();
         var id = document.getElementById('field-id').value;
-        var logoVal = document.getElementById('field-image').value || (logoSelect ? logoSelect.value : '/images/logos/lpdp.png');
+        var logoVal = document.getElementById('field-image').value;
+
+        if (!logoVal) {
+          toast('Silakan upload gambar logo beasiswa terlebih dahulu.', 'error');
+          return;
+        }
         
         var sData = {
           id: id || String(Date.now()),
@@ -1432,12 +1806,16 @@
       emptyAd.classList.add('hidden');
 
       tbodyAd.innerHTML = list.map(function(ad) {
+        var posBadge = ad.position === 'top' 
+          ? '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 font-bold uppercase text-[9px]">Atas</span>'
+          : '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 font-bold uppercase text-[9px]">Bawah</span>';
         return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
           '<td class="p-4"><div class="w-24 h-8 rounded border border-border flex items-center justify-center p-1 font-bold text-[9px] text-white" style="background: linear-gradient(135deg, ' + ad.bg_from + ', ' + ad.bg_to + ')">' + ad.cta_text + '</div></td>' +
           '<td class="p-4 font-bold text-foreground">' + ad.title + '</td>' +
           '<td class="p-4 text-muted-foreground font-semibold">' + ad.subtitle + '</td>' +
           '<td class="p-4 text-muted-foreground">' + ad.description + '</td>' +
           '<td class="p-4"><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-bold uppercase text-[9px]">' + ad.tag + '</span></td>' +
+          '<td class="p-4">' + posBadge + '</td>' +
           '<td class="p-4 text-blue-500 font-semibold">' + ad.link + '</td>' +
           '<td class="p-4 text-right whitespace-nowrap">' +
           '<button type="button" class="btn-edit-ad text-blue-500 hover:text-blue-700 font-bold mr-3" data-id="' + ad.id + '">Edit</button>' +
@@ -1460,6 +1838,7 @@
           document.getElementById('ad-field-bg-to').value = ad.bg_to;
           document.getElementById('ad-field-cta-text').value = ad.cta_text;
           document.getElementById('ad-field-link').value = ad.link;
+          document.getElementById('ad-field-position').value = ad.position || 'bottom'; // Pre-populate position - Request 5
 
           document.getElementById('ad-modal-title').textContent = 'Edit Spanduk Iklan';
           modalAd.classList.remove('hidden');
@@ -1493,6 +1872,7 @@
       btnAddAdEl.addEventListener('click', function() {
         formAd.reset();
         document.getElementById('ad-field-id').value = '';
+        document.getElementById('ad-field-position').value = 'bottom';
         document.getElementById('ad-modal-title').textContent = 'Tambah Spanduk Iklan Baru';
         modalAd.classList.remove('hidden');
       });
@@ -1522,6 +1902,7 @@
           cta_text:    document.getElementById('ad-field-cta-text').value.trim(),
           link:        document.getElementById('ad-field-link').value.trim(),
           image_url:   document.getElementById('ad-field-image-url') ? document.getElementById('ad-field-image-url').value : null,
+          position:    document.getElementById('ad-field-position').value, // Submit position - Request 5
         };
 
         var url = id ? '/admin/ads/' + id : '/admin/ads';
@@ -1608,8 +1989,567 @@
       });
     }
 
+    // ================= CRUD SLIDE CAROUSEL / SLIDER (Request 2) =================
+    var tbodyCarousel = document.getElementById('admin-carousel-table-body');
+    var emptyCarousel = document.getElementById('admin-empty-carousel');
+    var searchInputCarousel = document.getElementById('admin-search-carousel');
+    var modalCarousel = document.getElementById('carousel-modal');
+    var btnCloseModalCarousel = document.getElementById('btn-close-carousel-modal');
+    var modalBackdropCarousel = document.getElementById('carousel-modal-backdrop');
+    var formCarousel = document.getElementById('carousel-form');
+    var btnAddCarouselEl = document.getElementById('btn-add-carousel');
+
+    var carouselFieldType = document.getElementById('carousel-field-type');
+    var carouselScholarshipFields = document.getElementById('carousel-scholarship-fields');
+    var carouselVideoFields = document.getElementById('carousel-video-fields');
+
+    // Ubah form bidang dinamis berdasarkan tipe beasiswa/video
+    if (carouselFieldType) {
+      carouselFieldType.addEventListener('change', function(e) {
+        if (e.target.value === 'scholarship') {
+          if (carouselScholarshipFields) carouselScholarshipFields.classList.remove('hidden');
+          if (carouselVideoFields) carouselVideoFields.classList.add('hidden');
+        } else {
+          if (carouselScholarshipFields) carouselScholarshipFields.classList.add('hidden');
+          if (carouselVideoFields) carouselVideoFields.classList.remove('hidden');
+        }
+      });
+    }
+
+    // Toggle Tipe Sumber Video (Iframe vs File Upload) - Request 7
+    var carouselVideoSourceType = document.getElementById('carousel-video-source-type');
+    var carouselVideoUrlContainer = document.getElementById('carousel-video-url-container');
+    var carouselVideoFileContainer = document.getElementById('carousel-video-file-container');
+    var btnCarouselUploadVideo = document.getElementById('btn-carousel-upload-video');
+    var carouselFieldVideoFile = document.getElementById('carousel-field-video-file');
+    var carouselVideoPreviewContainer = document.getElementById('carousel-video-preview-container');
+    var carouselVideoPreview = document.getElementById('carousel-video-preview');
+    var carouselVideoUploadStatus = document.getElementById('carousel-video-upload-status');
+    var carouselFieldVideoUrl = document.getElementById('carousel-field-video-url');
+
+    if (carouselVideoSourceType) {
+      carouselVideoSourceType.addEventListener('change', function(e) {
+        if (e.target.value === 'url') {
+          if (carouselVideoUrlContainer) carouselVideoUrlContainer.classList.remove('hidden');
+          if (carouselVideoFileContainer) carouselVideoFileContainer.classList.add('hidden');
+        } else {
+          if (carouselVideoUrlContainer) carouselVideoUrlContainer.classList.add('hidden');
+          if (carouselVideoFileContainer) carouselVideoFileContainer.classList.remove('hidden');
+        }
+      });
+    }
+
+    // Pemicu Klik Pilih File
+    if (btnCarouselUploadVideo && carouselFieldVideoFile) {
+      btnCarouselUploadVideo.addEventListener('click', function() {
+        carouselFieldVideoFile.click();
+      });
+    }
+
+    // AJAX Upload Video Lokal dengan Chunked Upload (mendukung video besar)
+    if (carouselFieldVideoFile) {
+      carouselFieldVideoFile.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        // Validasi ekstensi file
+        var allowedExt = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
+        var fileExt = file.name.split('.').pop().toLowerCase();
+        if (!allowedExt.includes(fileExt)) {
+          toast('Gagal: Format file tidak didukung. Gunakan MP4, WebM, OGG, MOV, atau AVI.', 'error');
+          carouselFieldVideoFile.value = '';
+          return;
+        }
+
+        if (carouselVideoUploadStatus) {
+          carouselVideoUploadStatus.classList.remove('hidden');
+          carouselVideoUploadStatus.textContent = 'Mempersiapkan upload...';
+        }
+        if (carouselVideoPreviewContainer) carouselVideoPreviewContainer.classList.add('hidden');
+        if (btnCarouselUploadVideo) btnCarouselUploadVideo.disabled = true;
+
+        // Konfigurasi Chunked Upload
+        // Ukuran chunk: 1.8MB — aman di bawah upload_max_filesize=2M PHP default
+        var CHUNK_SIZE = 1.8 * 1024 * 1024;
+        var totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        // ID unik upload untuk mengidentifikasi sesi upload ini di server
+        var uploadId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        var currentChunk = 0;
+        var csrfToken = getCsrfToken();
+
+        // Fungsi untuk mengirimkan satu chunk ke server
+        function uploadChunk(index) {
+          var start = index * CHUNK_SIZE;
+          var end = Math.min(start + CHUNK_SIZE, file.size);
+          var chunk = file.slice(start, end);
+
+          var formData = new FormData();
+          formData.append('chunk', chunk, file.name);
+          formData.append('chunk_index', index);
+          formData.append('total_chunks', totalChunks);
+          formData.append('filename', file.name);
+          formData.append('upload_id', uploadId);
+
+          var percentDone = Math.round(((index + 1) / totalChunks) * 100);
+          if (carouselVideoUploadStatus) {
+            if (totalChunks > 1) {
+              carouselVideoUploadStatus.textContent = 'Mengupload... ' + percentDone + '% (' + (index + 1) + '/' + totalChunks + ' bagian)';
+            } else {
+              carouselVideoUploadStatus.textContent = 'Mengupload...';
+            }
+          }
+
+          fetch('/admin/carousel/upload-video-chunk', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json'
+            },
+            body: formData
+          })
+          .then(function(res) {
+            return res.text().then(function(text) {
+              var cleanText = text.trim();
+              var jsonStartIndex = cleanText.indexOf('{');
+              if (jsonStartIndex !== -1) cleanText = cleanText.substring(jsonStartIndex);
+              try {
+                var data = JSON.parse(cleanText);
+                if (!res.ok || !data.success) {
+                  var msg = data.message;
+                  if (data.errors && typeof data.errors === 'object') {
+                    var firstErrKey = Object.keys(data.errors)[0];
+                    if (firstErrKey) msg = data.errors[firstErrKey][0];
+                  }
+                  throw new Error(msg || 'Gagal mengunggah bagian video.');
+                }
+                return data;
+              } catch (err) {
+                throw new Error(err.message || 'Gagal memproses bagian video.');
+              }
+            });
+          })
+          .then(function(data) {
+            if (data.done) {
+              // Semua chunk selesai — video sudah tergabung di server
+              if (carouselFieldVideoUrl) carouselFieldVideoUrl.value = data.url;
+              if (carouselVideoPreview) carouselVideoPreview.src = data.url;
+              if (carouselVideoPreviewContainer) carouselVideoPreviewContainer.classList.remove('hidden');
+              toast('Video berhasil diunggah!', 'success');
+              if (carouselVideoUploadStatus) carouselVideoUploadStatus.classList.add('hidden');
+              if (btnCarouselUploadVideo) btnCarouselUploadVideo.disabled = false;
+              carouselFieldVideoFile.value = '';
+            } else {
+              // Lanjut ke chunk berikutnya
+              currentChunk++;
+              uploadChunk(currentChunk);
+            }
+          })
+          .catch(function(err) {
+            toast('Gagal upload video: ' + (err.message || 'Terjadi kesalahan sistem.'), 'error');
+            if (carouselVideoUploadStatus) carouselVideoUploadStatus.classList.add('hidden');
+            if (btnCarouselUploadVideo) btnCarouselUploadVideo.disabled = false;
+            carouselFieldVideoFile.value = '';
+          });
+        }
+
+        // Mulai upload dari chunk pertama
+        uploadChunk(0);
+      });
+    }
+
+    function renderCarouselTable(filterText) {
+      var list = carouselItems;
+      if (filterText) {
+        var q = filterText.toLowerCase();
+        list = list.filter(function(item) {
+          if (item.type === 'scholarship' && item.scholarship) {
+            return item.scholarship.title.toLowerCase().includes(q) || item.scholarship.provider.toLowerCase().includes(q);
+          } else {
+            return (item.title && item.title.toLowerCase().includes(q)) || (item.subtitle && item.subtitle.toLowerCase().includes(q));
+          }
+        });
+      }
+
+      if (!tbodyCarousel) return;
+
+      if (list.length === 0) {
+        tbodyCarousel.innerHTML = '';
+        if (emptyCarousel) emptyCarousel.classList.remove('hidden');
+        return;
+      }
+      if (emptyCarousel) emptyCarousel.classList.add('hidden');
+
+      tbodyCarousel.innerHTML = list.map(function(item) {
+        var typeBadge = item.type === 'scholarship'
+          ? '<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-bold uppercase text-[9px]">Beasiswa</span>'
+          : '<span class="px-2 py-0.5 rounded bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 font-bold uppercase text-[9px]">Video</span>';
+
+        var titleCol = '';
+        var descCol = '';
+        var mediaCol = '';
+
+        if (item.type === 'scholarship' && item.scholarship) {
+          titleCol = '<div class="font-bold text-foreground">' + item.scholarship.title + '</div><div class="text-[10px] text-muted-foreground">' + item.scholarship.provider + '</div>';
+          descCol = '<div class="text-muted-foreground">Menampilkan beasiswa sebagai Trending Slider.</div>';
+          mediaCol = '<span class="text-xs font-semibold text-muted-foreground">ID Beasiswa: ' + item.scholarship_id + '</span>';
+        } else {
+          titleCol = '<div class="font-bold text-foreground">' + (item.title || '-') + '</div>';
+          descCol = '<div class="text-[10px] text-muted-foreground uppercase font-semibold">' + (item.subtitle || '-') + '</div><div class="text-muted-foreground">' + (item.description || '-') + '</div>';
+          mediaCol = item.video_url 
+            ? '<span class="text-xs text-indigo-500 font-semibold truncate max-w-[150px] block" title="' + item.video_url.replace(/"/g, '&quot;') + '">Iframe Embed Attached</span>'
+            : '<span class="text-xs text-muted-foreground italic">Frame Kosongan</span>';
+        }
+
+        return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
+          '<td class="p-4 font-bold text-muted-foreground text-center">' + item.order_index + '</td>' +
+          '<td class="p-4">' + typeBadge + '</td>' +
+          '<td class="p-4">' + titleCol + '</td>' +
+          '<td class="p-4">' + descCol + '</td>' +
+          '<td class="p-4">' + mediaCol + '</td>' +
+          '<td class="p-4 text-right whitespace-nowrap">' +
+          '<button type="button" class="btn-edit-carousel text-blue-500 hover:text-blue-700 font-bold mr-3" data-id="' + item.id + '">Edit</button>' +
+          '<button type="button" class="btn-delete-carousel text-red-500 hover:text-red-700 font-bold" data-id="' + item.id + '">Hapus</button>' +
+          '</td></tr>';
+      }).join('');
+
+      tbodyCarousel.querySelectorAll('.btn-edit-carousel').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var itemId = parseInt(btn.dataset.id);
+          var item = carouselItems.find(function(i) { return i.id === itemId; });
+          if (!item) return;
+
+          document.getElementById('carousel-field-id').value = item.id;
+          document.getElementById('carousel-field-type').value = item.type;
+          document.getElementById('carousel-field-order').value = item.order_index;
+          document.getElementById('carousel-field-scholarship-id').value = item.scholarship_id || '';
+          document.getElementById('carousel-field-title').value = item.title || '';
+          document.getElementById('carousel-field-subtitle').value = item.subtitle || '';
+          document.getElementById('carousel-field-description').value = item.description || '';
+          document.getElementById('carousel-field-video-url').value = item.video_url || '';
+
+          // Atur Tipe Sumber Video dan Preview
+          if (item.type === 'video') {
+            var isEmbed = item.video_url && item.video_url.trim().startsWith('<');
+            if (carouselVideoSourceType) {
+              carouselVideoSourceType.value = isEmbed ? 'url' : (item.video_url ? 'file' : 'url');
+              carouselVideoSourceType.dispatchEvent(new Event('change'));
+            }
+            if (!isEmbed && item.video_url) {
+              if (carouselVideoPreview) carouselVideoPreview.src = item.video_url;
+              if (carouselVideoPreviewContainer) carouselVideoPreviewContainer.classList.remove('hidden');
+            } else {
+              if (carouselVideoPreviewContainer) carouselVideoPreviewContainer.classList.add('hidden');
+            }
+          }
+
+          // Pemicu event change agar menyembunyikan/menampilkan form sesuai
+          if (carouselFieldType) {
+            carouselFieldType.dispatchEvent(new Event('change'));
+          }
+
+          document.getElementById('carousel-modal-title').textContent = 'Edit Slide Carousel';
+          if (modalCarousel) modalCarousel.classList.remove('hidden');
+        });
+      });
+
+      tbodyCarousel.querySelectorAll('.btn-delete-carousel').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var itemId = parseInt(btn.dataset.id);
+          if (confirm('Apakah Anda yakin ingin menghapus slide carousel ini?')) {
+            fetch('/admin/carousel/' + itemId, {
+              method: 'DELETE',
+              headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                carouselItems = carouselItems.filter(function(i) { return i.id !== itemId; });
+                toast(data.message, 'success');
+                renderCarouselTable(searchInputCarousel ? searchInputCarousel.value : '');
+              } else {
+                toast(data.message || 'Gagal menghapus slide.', 'error');
+              }
+            })
+            .catch(function() {
+              toast('Gagal melakukan penghapusan slide.', 'error');
+            });
+          }
+        });
+      });
+    }
+
+    if (btnAddCarouselEl) {
+      btnAddCarouselEl.addEventListener('click', function() {
+        if (formCarousel) formCarousel.reset();
+        document.getElementById('carousel-field-id').value = '';
+        document.getElementById('carousel-field-scholarship-id').value = '';
+        document.getElementById('carousel-field-title').value = '';
+        document.getElementById('carousel-field-subtitle').value = '';
+        document.getElementById('carousel-field-description').value = '';
+        document.getElementById('carousel-field-video-url').value = '';
+        if (carouselFieldType) {
+          carouselFieldType.value = 'scholarship';
+          carouselFieldType.dispatchEvent(new Event('change'));
+        }
+        if (carouselVideoSourceType) {
+          carouselVideoSourceType.value = 'url';
+          carouselVideoSourceType.dispatchEvent(new Event('change'));
+        }
+        if (carouselVideoPreviewContainer) carouselVideoPreviewContainer.classList.add('hidden');
+        if (carouselVideoPreview) carouselVideoPreview.src = '';
+        document.getElementById('carousel-modal-title').textContent = 'Tambah Slide Carousel Baru';
+        if (modalCarousel) modalCarousel.classList.remove('hidden');
+      });
+    }
+
+    function closeModalCarousel() {
+      if (modalCarousel) modalCarousel.classList.add('hidden');
+    }
+    if (btnCloseModalCarousel) btnCloseModalCarousel.addEventListener('click', closeModalCarousel);
+    if (modalBackdropCarousel) modalBackdropCarousel.addEventListener('click', closeModalCarousel);
+
+    if (formCarousel) {
+      formCarousel.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('carousel-field-id').value;
+        var type = document.getElementById('carousel-field-type').value;
+
+        var payload = {
+          type: type,
+          order_index: parseInt(document.getElementById('carousel-field-order').value) || 0
+        };
+
+        if (type === 'scholarship') {
+          var sId = document.getElementById('carousel-field-scholarship-id').value;
+          if (!sId) {
+            toast('Harap pilih beasiswa untuk tipe slide ini.', 'error');
+            return;
+          }
+          payload.scholarship_id = parseInt(sId);
+        } else {
+          payload.title = document.getElementById('carousel-field-title').value.trim();
+          payload.subtitle = document.getElementById('carousel-field-subtitle').value.trim();
+          payload.description = document.getElementById('carousel-field-description').value.trim();
+          payload.video_url = document.getElementById('carousel-field-video-url').value.trim();
+        }
+
+        var url = id ? '/admin/carousel/' + id : '/admin/carousel';
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) {
+          if (!res.ok) {
+            return res.json().then(function(err) { throw err; });
+          }
+          return res.json();
+        })
+        .then(function(data) {
+          if (data.success) {
+            if (id) {
+              var parsedId = parseInt(id);
+              carouselItems = carouselItems.map(function(item) { return item.id === parsedId ? data.data : item; });
+            } else {
+              carouselItems.push(data.data);
+            }
+            // Sortir array berdasarkan urutan index
+            carouselItems.sort(function(a, b) { return a.order_index - b.order_index; });
+            
+            toast(data.message, 'success');
+            closeModalCarousel();
+            renderCarouselTable(searchInputCarousel ? searchInputCarousel.value : '');
+          } else {
+            toast(data.message || 'Gagal menyimpan slide.', 'error');
+          }
+        })
+        .catch(function(err) {
+          toast(err.message || 'Terjadi kesalahan sistem.', 'error');
+        });
+      });
+    }
+
+    if (searchInputCarousel) {
+      searchInputCarousel.addEventListener('input', function(e) {
+        renderCarouselTable(e.target.value);
+      });
+    }
+
     renderScholarshipsTable();
     renderAdsTable();
+    renderCarouselTable(); // Panggil tabel slider - Request 2
+  }
+
+  // Inisialisasi Carousel Beranda (Tugas 3) untuk menampilkan Beasiswa Trending & Video secara interaktif
+  function initHomeCarousel() {
+    var carousel = document.getElementById('home-carousel');
+    var slidesWrapper = document.getElementById('carousel-slides');
+    var dotsContainer = document.getElementById('carousel-dots');
+    var btnPrev = document.getElementById('btn-carousel-prev');
+    var btnNext = document.getElementById('btn-carousel-next');
+
+    // Jika komponen carousel tidak ditemukan, batalkan inisialisasi
+    if (!carousel || !slidesWrapper) return;
+
+    var currentIndex = 0;
+    var totalSlides = slidesWrapper.children.length; // Menghitung jumlah slide dinamis - Request 1
+    if (totalSlides === 0) return;
+    var autoPlayInterval = null;
+
+    // Fungsi untuk memperbarui posisi slide dan warna indikator dot
+    function updateCarousel() {
+      // Hitung pergeseran dinamis berdasarkan jumlah slide (Request 1)
+      var slideWidthPercentage = 100 / totalSlides;
+      slidesWrapper.style.transform = 'translateX(-' + (currentIndex * slideWidthPercentage) + '%)';
+      
+      // Perbarui indikator dot aktif
+      if (dotsContainer) {
+        var dots = dotsContainer.querySelectorAll('button');
+        dots.forEach(function(dot, idx) {
+          if (idx === currentIndex) {
+            dot.className = 'w-6 h-2.5 rounded-full bg-[#e53935] transition-all duration-300';
+          } else {
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white/60 transition-all duration-300';
+          }
+        });
+      }
+    }
+
+    // Navigasi ke slide berikutnya
+    function nextSlide() {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      updateCarousel();
+    }
+
+    // Navigasi ke slide sebelumnya
+    function prevSlide() {
+      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+      updateCarousel();
+    }
+
+    // Pasang pendengar klik tombol panah kanan
+    if (btnNext) {
+      btnNext.addEventListener('click', function() {
+        nextSlide();
+        resetAutoPlay();
+      });
+    }
+
+    // Pasang pendengar klik tombol panah kiri
+    if (btnPrev) {
+      btnPrev.addEventListener('click', function() {
+        prevSlide();
+        resetAutoPlay();
+      });
+    }
+
+    // Pasang pendengar klik pada setiap dot indikator
+    if (dotsContainer) {
+      var dots = dotsContainer.querySelectorAll('button');
+      dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+          currentIndex = parseInt(dot.dataset.slide);
+          updateCarousel();
+          resetAutoPlay();
+        });
+      });
+    }
+
+    // Memulai pemutaran otomatis slide
+    function startAutoPlay() {
+      autoPlayInterval = setInterval(nextSlide, 6000); // Ganti slide setiap 6 detik
+    }
+
+    // Menghentikan pemutaran otomatis slide
+    function stopAutoPlay() {
+      if (autoPlayInterval) clearInterval(autoPlayInterval);
+    }
+
+    // Me-reset timer pemutaran otomatis saat ada interaksi pengguna
+    function resetAutoPlay() {
+      stopAutoPlay();
+      startAutoPlay();
+    }
+
+    // Fungsi untuk mengikat event video ke carousel (pause saat video main)
+    function bindVideoEvents() {
+      var videos = slidesWrapper.querySelectorAll('video');
+      videos.forEach(function(vid) {
+        vid.addEventListener('play', function() {
+          stopAutoPlay(); // Hentikan auto-slide saat video diputar
+        });
+        vid.addEventListener('pause', function() {
+          startAutoPlay(); // Lanjutkan auto-slide saat video di-pause
+        });
+        vid.addEventListener('ended', function() {
+          startAutoPlay(); // Lanjutkan auto-slide saat video selesai
+        });
+      });
+    }
+
+    // Mulai inisialisasi awal
+    startAutoPlay();
+    updateCarousel();
+    bindVideoEvents();
+  }
+
+  // Inisialisasi tombol scroll ke atas melayang (Tugas 7)
+  function initBackToTop() {
+    var btn = document.getElementById('btn-back-to-top');
+    if (!btn) return;
+
+    // Pantau posisi scroll halaman untuk menampilkan/menyembunyikan tombol
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        // Tampilkan tombol dengan transisi slide-up & fade-in
+        btn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+        btn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+      } else {
+        // Sembunyikan kembali jika scroll kurang dari 300px
+        btn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        btn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }
+    });
+
+    // Jalankan animasi gulir ke atas dengan smooth scrolling saat tombol ditekan
+    btn.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  }
+
+  // Inisialisasi tombol toggle visibilitas kata sandi (Tugas 10 / Request 3 & 4)
+  function initPasswordVisibilityTogglers() {
+    document.querySelectorAll('.btn-toggle-modal-password').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var targetId = btn.dataset.target;
+        var input = document.getElementById(targetId);
+        var icon = btn.querySelector('i');
+        if (input) {
+          if (input.type === 'password') {
+            input.type = 'text';
+            if (icon && window.lucide) {
+              icon.setAttribute('data-lucide', 'eye-off');
+              lucide.createIcons();
+            }
+          } else {
+            input.type = 'password';
+            if (icon && window.lucide) {
+              icon.setAttribute('data-lucide', 'eye');
+              lucide.createIcons();
+            }
+          }
+        }
+      });
+    });
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -1624,6 +2564,9 @@
     initChatbot();
     initAdminPanel();
     initAboutModal();
+    initHomeCarousel(); // Jalankan carousel saat halaman termuat
+    initBackToTop();     // Jalankan listener tombol scroll ke atas
+    initPasswordVisibilityTogglers(); // Jalankan listener toggle kata sandi
     if (window.lucide) lucide.createIcons();
   });
 })();

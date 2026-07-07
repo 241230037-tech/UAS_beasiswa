@@ -102,16 +102,12 @@
                 </p>
             </div>
 
-            <!-- Tab Switcher (Hanya Muncul di Mode Pengguna / Bukan Admin) -->
-            <div id="auth-tab-group" class="flex gap-2 bg-muted rounded-xl p-1 border border-border shadow-inner">
-                <button type="button" id="tab-login" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-300">Login</button>
-                <button type="button" id="tab-register" class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-300">Daftar Akun</button>
-            </div>
+            <!-- Tab Switcher dihilangkan disamping login sesuai Tugas 1 -->
 
             <!-- Formulir Utama -->
             <form id="login-form" data-redirect="{{ $redirect }}" class="space-y-4">
-                <!-- Field Nama Lengkap (Hanya tampil saat Register) -->
-                <div id="name-field" class="space-y-1.5">
+                <!-- Field Nama Lengkap (Menggunakan transisi CSS halus untuk tampil/sembunyi) -->
+                <div id="name-field" class="space-y-1.5 hidden">
                     <label class="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nama Lengkap</label>
                     <div class="relative">
                         <i data-lucide="user" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
@@ -148,7 +144,7 @@
                     <label class="flex items-center gap-2 text-muted-foreground cursor-pointer select-none">
                         <input type="checkbox" class="rounded border-border text-accent-primary focus:ring-accent-primary/40"> Ingat saya
                     </label>
-                    <a href="#" class="text-accent-primary hover:opacity-85 transition-opacity" onclick="event.preventDefault(); alert('Fitur reset password belum tersedia.');">Lupa password?</a>
+                    <a href="#" class="text-accent-primary hover:opacity-85 transition-opacity" id="btn-forgot-password">Lupa password?</a>
                 </div>
 
                 <!-- Tombol Submit Form -->
@@ -176,38 +172,43 @@
 <style>
     /* Styling Aksen Warna Dinamis Menggunakan CSS Variables */
     .mode-login {
-        --accent-primary: #e53935; /* Merah untuk login */
+        --accent-primary: #e53935; /* Warna merah premium untuk mode masuk */
         --gradient-from: #e53935;
         --gradient-to: #c62828;
     }
     
     .mode-register {
-        --accent-primary: #6366f1; /* Indigo untuk register */
+        --accent-primary: #6366f1; /* Warna indigo premium untuk mode daftar */
         --gradient-from: #6366f1;
         --gradient-to: #4338ca;
     }
 
     .mode-admin {
-        --accent-primary: #475569; /* Slate Grey/Charcoal untuk admin */
+        --accent-primary: #475569; /* Warna slate grey premium untuk administrator */
         --gradient-from: #334155;
         --gradient-to: #1e293b;
     }
 
+    /* Memberikan efek transisi background linear gradient */
     #left-panel {
         background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .text-accent-primary {
         color: var(--accent-primary) !important;
+        transition: color 0.4s ease;
     }
     
     .bg-accent-primary {
         background-color: var(--accent-primary) !important;
+        transition: background-color 0.4s ease;
     }
 
     #login-submit {
         background-color: var(--accent-primary);
         box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1), 0 4px 20px 0 rgba(var(--accent-primary), 0.15);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     #login-submit:hover {
@@ -223,6 +224,29 @@
         display: inline-block;
         animation: wave 1.5s infinite ease-in-out;
         transform-origin: 70% 70%;
+    }
+
+    /* CSS Animasi / Transisi Smooth untuk Name Field (Daftar Akun) */
+    #name-field {
+        transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, margin 0.5s ease;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    /* Saat berada di mode registrasi, beri tinggi maksimal dan munculkan */
+    #login-page-container.mode-register #name-field {
+        max-height: 100px;
+        opacity: 1;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Paksa input form tetap block agar transisi tinggi berjalan lancar */
+    #name-field.hidden {
+        display: block !important;
     }
 </style>
 @endsection

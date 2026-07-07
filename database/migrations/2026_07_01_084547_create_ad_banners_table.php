@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('tag');          // Label tag singkat (misal: PROMO, HOT)
             $table->string('link');         // Tautan tujuan ketika iklan diklik
             $table->string('image_url')->nullable(); // URL/path gambar iklan (opsional), disimpan ke storage
+            $table->string('position')->default('bottom'); // Posisi penempatan iklan ('top' atau 'bottom') - Request 5
             $table->timestamps();           // created_at & updated_at otomatis
         });
     }
