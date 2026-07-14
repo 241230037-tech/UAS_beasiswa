@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login - PortalBeasiswa')
+@section('title', 'Login - Beasiswapedia')
 
 @section('content')
 @php
@@ -25,10 +25,14 @@
         <!-- Bagian Atas: Logo & Nama Brand -->
         <div class="relative z-10">
             <a href="{{ url('/home') }}" class="flex items-center gap-2 group">
-                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-105 active:scale-95 transition-transform">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#0052cc] shadow-lg shadow-black/10 group-hover:scale-105 transition-transform duration-300">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 stroke-[2.5]"></i>
                 </div>
-                <span class="text-xl font-black text-white tracking-tight">PORTAL<span class="opacity-80">BEASISWA</span></span>
+                <div class="flex flex-col">
+                    <span class="text-xl font-black text-white leading-none tracking-tight">
+                        beasiswa<span class="text-[#ff7300]">pedia</span>
+                    </span>
+                </div>
             </a>
         </div>
 
@@ -46,7 +50,7 @@
 
             <!-- Card Poin Keunggulan (Mengapa Kami?) -->
             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-xl space-y-4">
-                <h3 id="advantage-title" class="font-black text-sm tracking-wide uppercase opacity-95">Mengapa PortalBeasiswa?</h3>
+                <h3 id="advantage-title" class="font-black text-sm tracking-wide uppercase opacity-95">Mengapa Beasiswapedia?</h3>
                 <ul class="space-y-3 text-xs font-semibold">
                     <li class="flex items-center gap-2.5">
                         <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">✓</span>
@@ -70,7 +74,7 @@
 
         <!-- Bagian Bawah: Footer Hak Cipta -->
         <div class="relative z-10 text-[10px] text-white/60 font-medium">
-            &copy; {{ date('Y') }} PortalBeasiswa. Hak Cipta Dilindungi.
+            &copy; {{ date('Y') }} Beasiswapedia. Hak Cipta Dilindungi.
         </div>
     </div>
 
@@ -79,11 +83,17 @@
         
         <!-- Header Kecil Mobile Only -->
         <div class="flex md:hidden items-center justify-between border-b border-border pb-4 mb-4">
-            <a href="{{ url('/home') }}" class="flex items-center gap-2">
-                <i data-lucide="graduation-cap" class="w-6 h-6 text-[#e53935]" id="mobile-logo-icon"></i>
-                <span class="text-base font-black text-foreground">PORTAL<span class="text-[#e53935]" id="mobile-logo-accent">BEASISWA</span></span>
+            <a href="{{ url('/home') }}" class="flex items-center gap-2 shrink-0 group">
+                <div class="w-10 h-10 rounded-xl bg-[#0052cc] flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 stroke-[2.5]"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
+                        beasiswa<span class="text-[#ff7300]" id="mobile-logo-accent">pedia</span>
+                    </span>
+                </div>
             </a>
-            <span id="mobile-header-tag" class="text-[9px] font-bold uppercase tracking-wider bg-[#e53935]/10 text-[#e53935] px-2.5 py-1 rounded-full">USER</span>
+            <span id="mobile-header-tag" class="text-[9px] font-bold uppercase tracking-wider bg-[#0052cc]/10 text-[#0052cc] px-2.5 py-1 rounded-full">USER</span>
         </div>
 
         <!-- Spacer Atas untuk Menyeimbangkan Layout -->
@@ -98,7 +108,7 @@
                     Selamat Datang <span class="wave-hand">👋</span>
                 </h1>
                 <p id="form-welcome-subtitle" class="text-muted-foreground text-xs font-semibold">
-                    Login untuk melanjutkan ke PortalBeasiswa.
+                    Login untuk melanjutkan ke Beasiswapedia.
                 </p>
             </div>
 
@@ -172,9 +182,9 @@
 <style>
     /* Styling Aksen Warna Dinamis Menggunakan CSS Variables */
     .mode-login {
-        --accent-primary: #e53935; /* Warna merah premium untuk mode masuk */
-        --gradient-from: #e53935;
-        --gradient-to: #c62828;
+        --accent-primary: #0052cc; /* Warna biru premium untuk mode masuk */
+        --gradient-from: #0052cc;
+        --gradient-to: #003b99;
     }
     
     .mode-register {

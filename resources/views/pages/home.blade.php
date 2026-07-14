@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda - PortalBeasiswa')
+@section('title', 'Beranda - Beasiswapedia')
 
 @section('content')
 <div class="min-h-screen bg-background">
@@ -23,7 +23,7 @@
                                 <div class="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style="background-image: url('{{ $s['image'] }}'); filter: blur(4px);"></div>
                                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent z-0"></div>
                                 <div class="relative z-10 max-w-xl space-y-3 sm:space-y-4">
-                                    <span class="inline-block px-2.5 py-1 text-[10px] font-black text-white bg-[#e53935] rounded-md tracking-wider uppercase shadow-sm">Trending #{{ $index + 1 }}</span>
+                                    <span class="inline-block px-2.5 py-1 text-[10px] font-black text-white bg-[#0052cc] rounded-md tracking-wider uppercase shadow-sm">Trending #{{ $index + 1 }}</span>
                                     <h3 class="text-xl sm:text-3xl font-black leading-tight text-white">{{ $s['title'] }}</h3>
                                     <p class="text-white/80 text-xs sm:text-sm font-medium">{{ $s['provider'] }}. Dapatkan kesempatan pendanaan pendidikan tinggi terbaik.</p>
                                     <div class="flex flex-wrap items-center gap-3 text-xs">
@@ -170,10 +170,10 @@
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
-                        <span class="w-1 h-5 bg-[#e53935] rounded-sm inline-block"></span>
+                        <span class="w-1 h-5 bg-[#0052cc] rounded-sm inline-block"></span>
                         <h2 class="text-foreground font-bold text-sm">Beasiswa Update</h2>
                     </div>
-                    <a href="{{ route('library') }}" class="text-[#e53935] hover:text-[#ef5350] text-xs transition-colors">Lihat Semua</a>
+                    <a href="{{ route('library') }}" class="text-[#0052cc] hover:text-blue-700 text-xs transition-colors">Lihat Semua</a>
                 </div>
                 <div id="home-updates-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" data-raw-scholarships='@json($scholarships)'>
                     @foreach(array_slice($scholarships, 0, 4) as $scholarship)
@@ -205,10 +205,10 @@
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
-                        <span class="w-1 h-5 bg-[#e53935] rounded-sm inline-block"></span>
+                        <span class="w-1 h-5 bg-[#0052cc] rounded-sm inline-block"></span>
                         <h2 class="text-foreground font-bold text-sm">Beasiswa Terbaru</h2>
                     </div>
-                    <a href="{{ route('library') }}" class="text-[#e53935] hover:text-[#ef5350] text-xs transition-colors">Lihat Semua</a>
+                    <a href="{{ route('library') }}" class="text-[#0052cc] hover:text-blue-700 text-xs transition-colors">Lihat Semua</a>
                 </div>
                 <div id="home-latest-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     @foreach(array_slice($scholarships, 4, 8) as $scholarship)

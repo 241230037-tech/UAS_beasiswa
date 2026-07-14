@@ -1,6 +1,6 @@
 <div class="library-filter-panel bg-card border border-border rounded-xl p-4 w-full">
     <div class="flex items-center justify-between mb-4">
-        <h3 class="text-[#e53935] font-bold text-sm">Filter</h3>
+        <h3 class="text-[#0052cc] font-bold text-sm">Filter</h3>
         <button type="button" class="library-filter-reset text-muted-foreground hover:text-foreground text-xs transition-colors">Reset</button>
     </div>
 
@@ -9,7 +9,7 @@
         <div class="flex flex-wrap gap-1.5" id="library-sort-btns">
             @foreach(['Relevansi', 'Terbaru', 'A-Z', 'Terbanyak Dilihat', 'Baru'] as $sort)
                 <button type="button" data-sort="{{ $sort }}"
-                    class="library-sort-btn px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors {{ $sort === 'Relevansi' ? 'bg-[#e53935] text-white' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground' }}">
+                    class="library-sort-btn px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors {{ $sort === 'Relevansi' ? 'bg-[#0052cc] text-white' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground' }}">
                     {{ $sort }}
                 </button>
             @endforeach
@@ -54,7 +54,7 @@
 
     <div>
         <p class="text-foreground text-xs font-semibold mb-2">Negara</p>
-        <select class="library-country-select w-full bg-muted text-foreground text-xs px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+        <select class="library-country-select w-full bg-muted text-foreground text-xs px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-[#0052cc]/50">
             @foreach(['Semua Negara', 'Indonesia', 'United Kingdom', 'Australia', 'United States', 'Germany', 'Netherlands', 'Japan', 'Europe'] as $country)
                 <option value="{{ $country }}">{{ $country }}</option>
             @endforeach
