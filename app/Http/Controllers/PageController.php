@@ -30,7 +30,43 @@ class PageController extends Controller
      */
     public function landing(): View
     {
-        return view('pages.landing');
+        $ads = [];
+        $scholarships = [];
+        $carouselItems = [];
+
+        try {
+            $ads = AdBanner::limit(4)->get()->toArray();
+            if (count($ads) < 4) {
+                // Tambahkan fallback iklan jika di database kurang dari 4
+                $rawAds = ScholarshipData::adBanners();
+                $ads = array_slice($rawAds, 0, 4);
+            }
+        } catch (\Throwable $e) {
+            $ads = array_slice(ScholarshipData::adBanners(), 0, 4);
+        }
+
+        try {
+            $scholarships = Scholarship::limit(5)->get()->toArray();
+            if (count($scholarships) < 5) {
+                // Tambahkan fallback beasiswa jika di database kurang dari 5
+                $rawScholarships = ScholarshipData::all();
+                $scholarships = array_slice($rawScholarships, 0, 5);
+            }
+        } catch (\Throwable $e) {
+            $scholarships = array_slice(ScholarshipData::all(), 0, 5);
+        }
+
+        try {
+            $carouselItems = CarouselItem::with('scholarship')->orderBy('order_index', 'asc')->get()->toArray();
+        } catch (\Throwable $e) {
+            $carouselItems = [];
+        }
+
+        return view('pages.landing', [
+            'ads' => $ads,
+            'scholarships' => $scholarships,
+            'carouselItems' => $carouselItems,
+        ]);
     }
 
     /**

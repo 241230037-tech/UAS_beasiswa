@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar '.$scholarship['title'].' - PortalBeasiswa')
+@section('title', 'Daftar '.$scholarship['title'].' - Beasiswapedia')
 
 @section('content')
 <div class="min-h-screen bg-background">
@@ -8,7 +8,7 @@
 
     {{-- Container pendaftaran --}}
     <div id="scholarship-register-page" data-id="{{ $scholarship['id'] }}" class="max-w-4xl mx-auto px-4 py-6">
-        <a href="{{ route('scholarship.detail', ['id' => $scholarship['id']]) }}" class="flex items-center gap-1.5 text-muted-foreground hover:text-[#e53935] transition-colors mb-5 text-sm font-medium group">
+        <a href="{{ route('scholarship.detail', ['id' => $scholarship['id']]) }}" class="flex items-center gap-1.5 text-muted-foreground hover:text-[#0052cc] transition-colors mb-5 text-sm font-medium group">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
             Kembali ke Detail Beasiswa
         </a>
@@ -143,7 +143,7 @@
                         {{-- CV --}}
                         <div class="flex flex-col">
                             <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Upload CV / Resume</label>
-                            <input type="file" name="cv" data-preview-id="preview-cv" accept=".pdf,.doc,.docx" class="portal-input file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-[#e53935] file:text-white file:text-xs">
+                            <input type="file" name="cv" data-preview-id="preview-cv" accept=".pdf,.doc,.docx" class="portal-input file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-[#0052cc] file:text-white file:text-xs">
                             <div id="preview-cv" class="mt-2.5 hidden p-3 border border-border rounded-xl bg-muted/40 flex items-center gap-3"></div>
                         </div>
 
@@ -158,7 +158,7 @@
                 {{-- Persetujuan --}}
                 <div class="bg-muted/50 rounded-xl p-4 border border-border">
                     <label class="flex items-start gap-3 cursor-pointer text-sm text-muted-foreground">
-                        <input type="checkbox" name="agreement" required class="mt-1 rounded accent-[#e53935]">
+                        <input type="checkbox" name="agreement" required class="mt-1 rounded accent-[#0052cc]">
                         <span>Saya menyatakan bahwa seluruh data dan dokumen yang saya unggah adalah benar dan dapat dipertanggungjawabkan. Saya setuju dengan syarat & ketentuan program beasiswa ini.</span>
                     </label>
                 </div>
@@ -170,7 +170,7 @@
             </form>
             <div class="text-center mt-6 text-xs text-muted-foreground border-t border-border pt-4">
                 Mengalami kendala teknis atau error saat mendaftar? 
-                <button type="button" id="btn-register-contact" class="text-[#e53935] hover:underline font-bold focus:outline-none cursor-pointer">Hubungi Kami / Lapor Error</button>
+                <button type="button" id="btn-register-contact" class="text-[#0052cc] hover:underline font-bold focus:outline-none cursor-pointer">Hubungi Kami / Lapor Error</button>
             </div>
         </div>
     </div>

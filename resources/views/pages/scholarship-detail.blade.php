@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $scholarship['title'].' - PortalBeasiswa')
+@section('title', $scholarship['title'].' - Beasiswapedia')
 
 @section('content')
 @php
@@ -17,7 +17,7 @@
     @include('partials.navbar')
 
     <div id="scholarship-detail-page" data-id="{{ $scholarship['id'] }}" class="max-w-4xl mx-auto px-4 py-6">
-        <button type="button" onclick="history.back()" class="flex items-center gap-1.5 text-muted-foreground hover:text-[#e53935] transition-colors mb-5 text-sm font-medium group">
+        <button type="button" onclick="history.back()" class="flex items-center gap-1.5 text-muted-foreground hover:text-[#0052cc] transition-colors mb-5 text-sm font-medium group">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
             Kembali
         </button>
@@ -81,7 +81,7 @@
 
         <div class="card-3d p-6 rounded-2xl bg-card border-2 border-border mb-5">
             <h2 class="text-foreground font-black text-base mb-3 flex items-center gap-2">
-                <span class="w-1 h-5 bg-[#e53935] rounded-full inline-block"></span>
+                <span class="w-1 h-5 bg-[#0052cc] rounded-full inline-block"></span>
                 Deskripsi Beasiswa
             </h2>
             <p class="text-muted-foreground text-sm leading-relaxed">{{ $extra['description'] }}</p>
@@ -89,13 +89,13 @@
 
         <div class="card-3d p-6 rounded-2xl bg-card border-2 border-border mb-5">
             <h2 class="text-foreground font-black text-base mb-4 flex items-center gap-2">
-                <span class="w-1 h-5 bg-[#e53935] rounded-full inline-block"></span>
+                <span class="w-1 h-5 bg-[#0052cc] rounded-full inline-block"></span>
                 Syarat & Ketentuan
             </h2>
             <ul class="space-y-3">
                 @foreach($extra['requirements'] as $i => $req)
                     <li class="flex items-start gap-3">
-                        <span class="w-6 h-6 rounded-full bg-[#e53935] text-white text-xs flex items-center justify-center shrink-0 font-black mt-0.5 shadow-[1px_1px_0px_0px_rgba(183,28,28,0.5)]">{{ $i + 1 }}</span>
+                        <span class="w-6 h-6 rounded-full bg-[#0052cc] text-white text-xs flex items-center justify-center shrink-0 font-black mt-0.5 shadow-[1px_1px_0px_0px_rgba(0,59,153,0.5)]">{{ $i + 1 }}</span>
                         <span class="text-muted-foreground text-sm leading-relaxed">{{ $req }}</span>
                     </li>
                 @endforeach
@@ -119,7 +119,7 @@
 
         <div class="card-3d p-6 rounded-2xl bg-card border-2 border-border mb-8">
             <h2 class="text-foreground font-black text-base mb-5 flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-[#e53935]"></i>
+                <i data-lucide="calendar" class="w-4 h-4 text-[#0052cc]"></i>
                 Timeline Pendaftaran
             </h2>
             <div class="relative pl-6">
@@ -127,7 +127,7 @@
                 <div class="space-y-5">
                     @foreach($timelineSteps as $step)
                         <div class="relative flex items-start gap-3">
-                            <div class="absolute -left-6 w-4 h-4 rounded-full border-2 flex items-center justify-center top-0.5 {{ $step['active'] ? 'border-[#e53935] bg-[#e53935] shadow-[0_0_0_3px_rgba(229,57,53,0.15)]' : 'border-border bg-background' }}">
+                            <div class="absolute -left-6 w-4 h-4 rounded-full border-2 flex items-center justify-center top-0.5 {{ $step['active'] ? 'border-[#0052cc] bg-[#0052cc] shadow-[0_0_0_3px_rgba(0,82,204,0.15)]' : 'border-border bg-background' }}">
                                 @if($step['active'])<span class="w-1.5 h-1.5 rounded-full bg-white"></span>@endif
                             </div>
                             <div>

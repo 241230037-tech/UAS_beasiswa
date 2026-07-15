@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Judul Halaman dinamis diambil dari section('title') di masing-masing page -->
-    <title>@yield('title', 'PortalBeasiswa')</title>
+    <title>@yield('title', 'Beasiswapedia')</title>
     <!-- CSRF Token Laravel untuk keamanan request POST AJAX / Form -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -34,22 +34,22 @@
         <div class="modal-backdrop" id="about-modal-backdrop"></div>
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="bg-card border-2 border-border rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden z-10 modal-box">
-                <div class="h-1.5 bg-[#e53935] w-full"></div>
+                <div class="h-1.5 bg-[#0052cc] w-full"></div>
                 <button type="button" id="btn-close-about-modal" class="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
                 <div class="p-6">
                     <div class="flex items-center gap-2 mb-4">
-                        <i data-lucide="info" class="w-5 h-5 text-[#e53935]"></i>
+                        <i data-lucide="info" class="w-5 h-5 text-[#0052cc]"></i>
                         <h2 class="text-foreground font-black text-lg">Tentang Kami</h2>
                     </div>
                     <div class="space-y-3 text-xs leading-relaxed text-muted-foreground mb-6">
-                        <p><strong>PortalBeasiswa</strong> adalah platform informasi beasiswa terpercaya yang dirancang khusus untuk mempermudah pelajar Indonesia dalam mencari dan melamar berbagai program beasiswa secara real-time.</p>
+                        <p><strong>Beasiswapedia</strong> adalah platform informasi beasiswa terpercaya yang dirancang khusus untuk mempermudah pelajar Indonesia dalam mencari dan melamar berbagai program beasiswa secara real-time.</p>
                         <p>Visi kami adalah mewujudkan pemerataan pendidikan dengan memberikan akses informasi beasiswa yang akurat, transparan, dan mudah diakses oleh siapa saja, di mana saja.</p>
                         
                         <div class="border-t border-border pt-3 mt-3">
                             <p class="font-bold text-foreground mb-1.5 flex items-center gap-1.5 text-xs">
-                                <i data-lucide="alert-triangle" class="w-4 h-4 text-[#e53935]"></i>
+                                <i data-lucide="alert-triangle" class="w-4 h-4 text-[#0052cc]"></i>
                                 Laporkan Masalah / Error
                             </p>
                             <p>Jika Anda mengalami kendala teknis, error saat mengunggah berkas, atau kesulitan lain saat menggunakan website kami, hubungi pusat bantuan kami:</p>
@@ -59,7 +59,7 @@
                             </p>
                         </div>
                     </div>
-                    <button type="button" id="btn-close-about-modal-btn" class="w-full btn-3d-red py-3 rounded-xl text-sm font-bold shadow-lg shadow-red-500/10 cursor-pointer">Tutup</button>
+                    <button type="button" id="btn-close-about-modal-btn" class="w-full btn-3d-red py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/10 cursor-pointer">Tutup</button>
                 </div>
             </div>
         </div>

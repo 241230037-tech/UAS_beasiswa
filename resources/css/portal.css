@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 /* ── Theme tokens (identik ffiggmua theme.css) ── */
 :root {
@@ -24,7 +23,7 @@
   --input-background: #f3f3f5;
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
-  --accent-primary: #e53935;
+  --accent-primary: #0052cc;
 }
 
 .dark {
@@ -115,8 +114,8 @@ body {
 /* 3D styles */
 .text-3d-red {
   font-weight: 900;
-  color: #e53935;
-  text-shadow: 0 1px 0 #b71c1c, 0 2px 0 #a30000, 0 3px 0 #8e0000, 0 4px 5px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.15);
+  color: #0052cc;
+  text-shadow: 0 1px 0 #003b99, 0 2px 0 #002e80, 0 3px 0 #002266, 0 4px 5px rgba(0,0,0,0.2), 0 10px 10px rgba(0,0,0,0.1);
   letter-spacing: -0.025em;
 }
 
@@ -140,20 +139,32 @@ body {
 
 .card-3d:hover {
   transform: translate(-2px,-2px);
-  box-shadow: 8px 8px 0 0 rgba(229,57,53,0.2);
+  box-shadow: 8px 8px 0 0 rgba(0,82,204,0.15);
 }
 
 .btn-3d-red {
   position: relative;
-  background-color: #e53935;
+  background-color: #0052cc;
   color: #fff;
-  border: 2px solid #b71c1c;
-  box-shadow: 0 4px 0 0 #b71c1c;
+  border: 2px solid #003b99;
+  box-shadow: 0 4px 0 0 #003b99;
   transition: all 0.1s ease;
 }
 
-.btn-3d-red:hover { background-color: #ef5350; }
-.btn-3d-red:active { transform: translateY(4px); box-shadow: 0 0 0 #b71c1c; }
+.btn-3d-red:hover { background-color: #1a75ff; }
+.btn-3d-red:active { transform: translateY(4px); box-shadow: 0 0 0 #003b99; }
+
+.btn-3d-orange {
+  position: relative;
+  background-color: #ff7300;
+  color: #fff;
+  border: 2px solid #e65c00;
+  box-shadow: 0 4px 0 0 #e65c00;
+  transition: all 0.1s ease;
+}
+
+.btn-3d-orange:hover { background-color: #ff851a; }
+.btn-3d-orange:active { transform: translateY(4px); box-shadow: 0 0 0 #e65c00; }
 
 .btn-3d-outline {
   position: relative;
@@ -293,3 +304,83 @@ body {
   background-color: #ffffff !important;
   color: #1e293b !important;
 }
+
+/* Landing Page Redesign Custom CSS */
+@keyframes landing-float {
+  0% { transform: translateY(0px) rotate(2deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+  100% { transform: translateY(0px) rotate(2deg); }
+}
+
+@keyframes landing-float-reverse {
+  0% { transform: translateY(0px) rotate(-3deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(-3deg); }
+}
+
+.animate-landing-float {
+  animation: landing-float 6s ease-in-out infinite;
+}
+
+.animate-landing-float-reverse {
+  animation: landing-float-reverse 7s ease-in-out infinite;
+}
+
+/* Partner Logo Grayscale to Color hover effect */
+.partner-logo-img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.partner-logo-img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* Alumni Collage Masonry styles */
+.alumni-collage-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.alumni-collage-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 20;
+}
+
+/* Hero Whatsapp Card style */
+.hero-consultation-card {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+/* Horizontal scroll styling for Program Unggulan */
+.scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+.scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 999px;
+}
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Decorative dot grid background */
+.dot-grid-bg {
+  background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Gradient text utility */
+.text-gradient-sky-blue {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+

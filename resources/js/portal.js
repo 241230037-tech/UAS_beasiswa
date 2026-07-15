@@ -2412,7 +2412,7 @@
         var dots = dotsContainer.querySelectorAll('button');
         dots.forEach(function(dot, idx) {
           if (idx === currentIndex) {
-            dot.className = 'w-6 h-2.5 rounded-full bg-[#e53935] transition-all duration-300';
+            dot.className = 'w-6 h-2.5 rounded-full bg-[#0052cc] transition-all duration-300';
           } else {
             dot.className = 'w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white/60 transition-all duration-300';
           }

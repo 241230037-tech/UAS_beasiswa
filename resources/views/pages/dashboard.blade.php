@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - PortalBeasiswa')
+@section('title', 'Dashboard - Beasiswapedia')
 
 @section('content')
 <div class="min-h-screen bg-background">
