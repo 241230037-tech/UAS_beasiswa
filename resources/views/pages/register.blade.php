@@ -1,3 +1,22 @@
+{{--
+    View: pages/register.blade.php
+
+    Halaman Formulir Pendaftaran (Lamaran) Beasiswa.
+    Diakses dari URL: /scholarship/{id}/register
+    Menampilkan form multi-langkah untuk melamar beasiswa tertentu.
+
+    Data yang diterima dari PageController::register():
+      - $scholarship : Array data beasiswa yang dilamar (id, title, provider, dll.)
+      - $extra       : Array info tambahan beasiswa dari ScholarshipData::extra($id)
+
+    Pengiriman form dilakukan via AJAX POST multipart/form-data ke /api/scholarship/register.
+    Mendukung upload file: KTP, Ijazah, Transkrip (wajib) dan CV (opsional).
+    Batas ukuran file: maksimal 2MB per file.
+
+    Template yang di-extend: layouts/app.blade.php
+    Partial yang digunakan: partials/navbar
+--}}
+
 @extends('layouts.app')
 
 @section('title', 'Daftar '.$scholarship['title'].' - Beasiswapedia')

@@ -1,3 +1,29 @@
+{{--
+    View: pages/landing.blade.php
+
+    Halaman Landing Page utama yang pertama kali dilihat pengunjung baru.
+    Diakses dari URL: / (root)
+    Didesain untuk pengunjung yang belum login, menampilkan:
+      - Sticky navbar khusus landing (berbeda dari navbar auth)
+      - Slider/Carousel hero dengan slide beasiswa atau promosi
+      - Section program unggulan / highlight beasiswa
+      - Section statistik, mitra, dan alasan memilih Beasiswapedia
+      - Section CTA (Call-To-Action) pendaftaran akun
+      - Footer informasi website
+
+    Data yang diterima dari PageController::landing():
+      - $ads          : Array maks. 4 iklan dari database (fallback ke data statis jika kosong)
+      - $scholarships : Array maks. 5 beasiswa dari database (fallback ke data statis)
+      - $carouselItems: Array slide carousel dinamis dari database
+
+    Catatan khusus:
+      - Landing page selalu menggunakan mode terang (light mode), diatur via JavaScript
+        di @section('head') untuk mencegah kedipan warna saat halaman dimuat.
+      - Menggunakan navbar tersendiri (bukan partial navbar auth).
+
+    Template yang di-extend: layouts/app.blade.php
+--}}
+
 @extends('layouts.app')
 
 @section('title', 'Beasiswapedia - Wujudkan Mimpi Kuliah & Kerja di Luar Negeri')
@@ -19,23 +45,6 @@
 @section('content')
 <div class="page-landing min-h-screen bg-[#fafcff] text-slate-800 flex flex-col items-center justify-start overflow-x-hidden font-sans relative">
     
-    <!-- SECTION 1: TOP FESTIVAL BANNER (Study Abroad Festival 2026) -->
-    <div class="w-full bg-gradient-to-r from-red-500 via-orange-500 to-indigo-600 text-white py-2 px-4 shadow-md relative z-30 overflow-hidden">
-        <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent bg-[size:16px_16px]"></div>
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 relative z-10 text-center md:text-left">
-            <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 justify-center md:justify-start">
-                <span class="bg-yellow-400 text-slate-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
-                    FESTIVAL 2026
-                </span>
-                <p class="text-xs sm:text-sm font-bold tracking-wide">
-                    <span class="text-yellow-300">Study Abroad Festival:</span> Info Beasiswa 40+ Negara · Konsultasi Dokumen & Rencana Belajar · Free Trial IELTS
-                </p>
-            </div>
-            <a href="{{ route('login') }}" class="shrink-0 bg-white hover:bg-slate-50 text-indigo-700 text-xs font-black px-4 py-1.5 rounded-full shadow-md active:translate-y-0.5 transition-all uppercase tracking-wider">
-                Daftar Sekarang <i data-lucide="arrow-right" class="inline w-3 h-3 ml-0.5 -mt-0.5"></i>
-            </a>
-        </div>
-    </div>
 
     <!-- SECTION 2: STICKY PREMIUM NAVBAR (Blue Background) -->
     <nav class="w-full bg-[#0052cc] border-b border-blue-750 sticky top-0 z-40 shadow-lg text-white transition-all duration-300">

@@ -1,82 +1,183 @@
 <?php
 
 /**
- * File Rute Web (routes/web.php)
- * Di sinilah kita mendefinisikan seluruh URL rute web yang dapat diakses oleh browser 
- * dan dipetakan langsung ke method controller yang sesuai di PageController.
+ * File: routes/web.php
+ *
+ * Mendefinisikan seluruh rute URL web yang dapat diakses oleh browser.
+ * Setiap rute dipetakan ke method pada controller yang sesuai dengan
+ * tanggung jawabnya masing-masing (Single Responsibility Principle).
+ *
+ * Daftar Controller:
+ *   - PageController      : Halaman publik (landing, home, library, dashboard, dll.)
+ *   - ScholarshipController : CRUD beasiswa (admin)
+ *   - AdBannerController  : CRUD iklan (admin)
+ *   - CarouselController  : CRUD carousel + streaming video
+ *   - AdminController     : CRUD akun admin
+ *   - AuthController      : Login, register, logout, update profil
+ *   - BookmarkController  : Get & toggle bookmark beasiswa
  */
 
-use App\Http\Controllers\PageController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;         // Controller manajemen akun admin
+use App\Http\Controllers\AdBannerController;      // Controller manajemen spanduk iklan
+use App\Http\Controllers\AuthController;          // Controller autentikasi pengguna
+use App\Http\Controllers\BookmarkController;      // Controller bookmark beasiswa
+use App\Http\Controllers\CarouselController;      // Controller carousel/slider + video
+use App\Http\Controllers\PageController;          // Controller halaman publik
+use App\Http\Controllers\ScholarshipController;   // Controller manajemen data beasiswa
+use Illuminate\Support\Facades\Route;             // Facade untuk mendefinisikan rute
 
-// Rute Halaman Pengunjung / Publik
-// Rute '/' mengarahkan ke Landing Page awal saat pertama kali membuka website.
+// ============================================================
+// GRUP 1: Halaman Publik (dapat diakses semua pengunjung)
+// ============================================================
+
+// Halaman Landing Page — tampilan pertama saat mengunjungi website
 Route::get('/', [PageController::class, 'landing']);
 
-// Rute '/home' mengarahkan ke Halaman Utama portal beasiswa yang menampilkan banner promosi & highlight beasiswa.
+// Halaman Beranda (Home) — portal beasiswa dengan slider & katalog
 Route::get('/home', [PageController::class, 'home'])->name('home');
 
-// Rute '/login' menampilkan halaman login dan pendaftaran akun tiruan.
+// Halaman Login & Registrasi — form masuk dan daftar akun
 Route::get('/login', [PageController::class, 'login'])->name('login');
 
-// Rute '/library' menampilkan Katalog Beasiswa lengkap beserta fitur filter pencarian, negara, dan tingkat studi.
+// Halaman Katalog Beasiswa (Library) — daftar lengkap semua beasiswa dengan filter
 Route::get('/library', [PageController::class, 'library'])->name('library');
 
-// Rute '/dashboard' menampilkan halaman profil pengguna dan daftar beasiswa yang telah mereka simpan (bookmark).
+// Halaman Dashboard — profil pengguna dan daftar beasiswa yang dibookmark
 Route::get('/dashboard', [PageController::class, 'dashboard'])->name('dashboard');
 
-// Rute '/scholarship/{id}' menampilkan detail lengkap sebuah beasiswa berdasarkan ID uniknya.
+// Halaman Detail Beasiswa — informasi lengkap satu beasiswa berdasarkan ID
 Route::get('/scholarship/{id}', [PageController::class, 'scholarshipDetail'])->name('scholarship.detail');
 
-// Rute '/scholarship/{id}/register' menampilkan formulir pendaftaran lamaran beasiswa bersangkutan.
+// Halaman Formulir Pendaftaran — form lamaran beasiswa berdasarkan ID
 Route::get('/scholarship/{id}/register', [PageController::class, 'register'])->name('scholarship.register');
 
-// Rute POST '/api/scholarship/register' memproses data pendaftaran beasiswa dan file dokumen (KTP, Ijazah, dll).
-Route::post('/api/scholarship/register', [PageController::class, 'submitRegistration'])->name('api.scholarship.register');
-
-// Rute '/tutorial' menampilkan tutorial langkah-demi-langkah cara mendaftar beasiswa secara umum.
+// Halaman Tutorial — panduan langkah-demi-langkah cara mendaftar beasiswa
 Route::get('/tutorial', [PageController::class, 'tutorial'])->name('tutorial');
 
-// Rute '/admin' menampilkan halaman dashboard panel admin untuk memanipulasi data beasiswa & iklan.
+// Halaman Panel Admin — dashboard manajemen data (khusus admin)
 Route::get('/admin', [PageController::class, 'admin'])->name('admin');
 
-// Rute API CRUD untuk Administrator dalam mengelola Data Beasiswa
-Route::post('/admin/scholarships', [PageController::class, 'storeScholarship'])->name('admin.scholarships.store');
-Route::put('/admin/scholarships/{id}', [PageController::class, 'updateScholarship'])->name('admin.scholarships.update');
-Route::delete('/admin/scholarships/{id}', [PageController::class, 'deleteScholarship'])->name('admin.scholarships.delete');
-// Rute khusus untuk upload file gambar/logo beasiswa ke direktori storage/public
-Route::post('/admin/scholarships/upload-image', [PageController::class, 'uploadScholarshipImage'])->name('admin.scholarships.upload-image');
+// ============================================================
+// GRUP 2: API Pendaftaran Beasiswa
+// ============================================================
 
-// Rute API CRUD untuk Administrator dalam mengelola Spanduk Iklan (Ads Banner)
-Route::post('/admin/ads', [PageController::class, 'storeAd'])->name('admin.ads.store');
-Route::put('/admin/ads/{id}', [PageController::class, 'updateAd'])->name('admin.ads.update');
-Route::delete('/admin/ads/{id}', [PageController::class, 'deleteAd'])->name('admin.ads.delete');
-// Rute khusus untuk upload file gambar iklan ke direktori storage/public
-Route::post('/admin/ads/upload-image', [PageController::class, 'uploadAdImage'])->name('admin.ads.upload-image');
+// Proses pengiriman formulir lamaran beasiswa beserta file dokumen (KTP, Ijazah, Transkrip, CV)
+Route::post('/api/scholarship/register', [PageController::class, 'submitRegistration'])
+    ->name('api.scholarship.register');
 
-// Rute API CRUD untuk Administrator dalam mengelola Akun Admin Lainnya (Tugas 9)
-Route::post('/admin/admins', [PageController::class, 'storeAdmin'])->name('admin.admins.store');
-Route::put('/admin/admins/{id}', [PageController::class, 'updateAdmin'])->name('admin.admins.update');
-Route::delete('/admin/admins/{id}', [PageController::class, 'deleteAdmin'])->name('admin.admins.delete');
+// ============================================================
+// GRUP 3: CRUD Beasiswa (Admin)
+// ============================================================
 
-// Rute API CRUD untuk Administrator dalam mengelola Slide Carousel / Slider (Request 2)
-Route::post('/admin/carousel', [PageController::class, 'storeCarouselItem'])->name('admin.carousel.store');
-Route::put('/admin/carousel/{id}', [PageController::class, 'updateCarouselItem'])->name('admin.carousel.update');
-Route::delete('/admin/carousel/{id}', [PageController::class, 'deleteCarouselItem'])->name('admin.carousel.delete');
-Route::post('/admin/carousel/upload-video', [PageController::class, 'uploadCarouselVideo'])->name('admin.carousel.upload-video');
-Route::post('/admin/carousel/upload-video-chunk', [PageController::class, 'uploadCarouselVideoChunk'])->name('admin.carousel.upload-video-chunk');
-// Route streaming video dengan HTTP Range Request — wajib untuk fitur seek/skip di browser
-Route::get('/stream/video/{filename}', [PageController::class, 'streamCarouselVideo'])->name('video.stream')->where('filename', '.+');
+// Tambah beasiswa baru ke database
+Route::post('/admin/scholarships', [ScholarshipController::class, 'store'])
+    ->name('admin.scholarships.store');
 
-// Rute API Otentikasi Berbasis Database (Session-backed)
-Route::post('/api/login', [PageController::class, 'apiLogin'])->name('api.login');
-Route::post('/api/register', [PageController::class, 'apiRegister'])->name('api.register');
-Route::post('/api/logout', [PageController::class, 'apiLogout'])->name('api.logout');
-// Rute API Update Profil dan Password Pengguna Terintegrasi DB (Tugas 10)
-Route::post('/api/update-profile', [PageController::class, 'updateProfile'])->name('api.update-profile');
+// Perbarui data beasiswa berdasarkan ID
+Route::put('/admin/scholarships/{id}', [ScholarshipController::class, 'update'])
+    ->name('admin.scholarships.update');
 
+// Hapus beasiswa berdasarkan ID
+Route::delete('/admin/scholarships/{id}', [ScholarshipController::class, 'destroy'])
+    ->name('admin.scholarships.delete');
 
-// Rute API Bookmark Berbasis Database
-Route::get('/api/bookmarks', [PageController::class, 'getBookmarks'])->name('api.bookmarks');
-Route::post('/api/bookmarks/toggle', [PageController::class, 'toggleBookmark'])->name('api.bookmarks.toggle');
+// Upload file logo/gambar beasiswa ke storage
+Route::post('/admin/scholarships/upload-image', [ScholarshipController::class, 'uploadImage'])
+    ->name('admin.scholarships.upload-image');
 
+// ============================================================
+// GRUP 4: CRUD Spanduk Iklan / Ad Banner (Admin)
+// ============================================================
+
+// Tambah iklan baru ke database
+Route::post('/admin/ads', [AdBannerController::class, 'store'])
+    ->name('admin.ads.store');
+
+// Perbarui data iklan berdasarkan ID
+Route::put('/admin/ads/{id}', [AdBannerController::class, 'update'])
+    ->name('admin.ads.update');
+
+// Hapus iklan berdasarkan ID (beserta file gambarnya di storage)
+Route::delete('/admin/ads/{id}', [AdBannerController::class, 'destroy'])
+    ->name('admin.ads.delete');
+
+// Upload file gambar/media iklan ke storage
+Route::post('/admin/ads/upload-image', [AdBannerController::class, 'uploadImage'])
+    ->name('admin.ads.upload-image');
+
+// ============================================================
+// GRUP 5: CRUD Carousel / Slider (Admin)
+// ============================================================
+
+// Tambah slide carousel baru ke database
+Route::post('/admin/carousel', [CarouselController::class, 'store'])
+    ->name('admin.carousel.store');
+
+// Perbarui data slide carousel berdasarkan ID
+Route::put('/admin/carousel/{id}', [CarouselController::class, 'update'])
+    ->name('admin.carousel.update');
+
+// Hapus slide carousel berdasarkan ID
+Route::delete('/admin/carousel/{id}', [CarouselController::class, 'destroy'])
+    ->name('admin.carousel.delete');
+
+// Upload file video carousel (untuk file kecil — upload biasa)
+Route::post('/admin/carousel/upload-video', [CarouselController::class, 'uploadVideo'])
+    ->name('admin.carousel.upload-video');
+
+// Upload file video carousel dalam potongan (chunked upload — untuk file besar)
+Route::post('/admin/carousel/upload-video-chunk', [CarouselController::class, 'uploadVideoChunk'])
+    ->name('admin.carousel.upload-video-chunk');
+
+// Streaming video carousel dengan dukungan HTTP Range Request (untuk seek/skip video)
+Route::get('/stream/video/{filename}', [CarouselController::class, 'streamVideo'])
+    ->name('video.stream')
+    ->where('filename', '.+'); // Regex memungkinkan karakter '.' di nama file (misal: video.mp4)
+
+// ============================================================
+// GRUP 6: CRUD Akun Admin (Super Admin)
+// ============================================================
+
+// Tambah akun admin baru ke database
+Route::post('/admin/admins', [AdminController::class, 'store'])
+    ->name('admin.admins.store');
+
+// Perbarui data akun admin berdasarkan ID
+Route::put('/admin/admins/{id}', [AdminController::class, 'update'])
+    ->name('admin.admins.update');
+
+// Hapus akun admin berdasarkan ID (tidak dapat menghapus diri sendiri)
+Route::delete('/admin/admins/{id}', [AdminController::class, 'destroy'])
+    ->name('admin.admins.delete');
+
+// ============================================================
+// GRUP 7: Autentikasi Berbasis Database (Session)
+// ============================================================
+
+// Proses login pengguna dengan verifikasi email & password
+Route::post('/api/login', [AuthController::class, 'login'])
+    ->name('api.login');
+
+// Proses pendaftaran akun pengguna baru
+Route::post('/api/register', [AuthController::class, 'register'])
+    ->name('api.register');
+
+// Proses logout pengguna (menghapus session)
+Route::post('/api/logout', [AuthController::class, 'logout'])
+    ->name('api.logout');
+
+// Perbarui nama dan/atau password pengguna yang sedang login
+Route::post('/api/update-profile', [AuthController::class, 'updateProfile'])
+    ->name('api.update-profile');
+
+// ============================================================
+// GRUP 8: Bookmark Beasiswa (Pengguna Login)
+// ============================================================
+
+// Ambil daftar ID beasiswa yang telah dibookmark oleh pengguna yang sedang login
+Route::get('/api/bookmarks', [BookmarkController::class, 'index'])
+    ->name('api.bookmarks');
+
+// Toggle bookmark: tambah jika belum ada, hapus jika sudah ada
+Route::post('/api/bookmarks/toggle', [BookmarkController::class, 'toggle'])
+    ->name('api.bookmarks.toggle');

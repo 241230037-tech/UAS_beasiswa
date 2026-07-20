@@ -1,3 +1,24 @@
+{{--
+    Partial: partials/navbar.blade.php
+
+    Navbar navigasi utama yang digunakan di semua halaman setelah login (home, library, dashboard, dll.).
+    Berbeda dengan navbar landing page yang hard-coded di pages/landing.blade.php.
+
+    Fitur yang tersedia:
+      - Logo brand Beasiswapedia dengan link ke /home
+      - Form pencarian beasiswa (redirect ke /library?q=...)
+      - Tombol toggle chatbot, dark/light mode
+      - Avatar dan nama pengguna yang sedang login (diisi JavaScript dari localStorage)
+      - Tombol Login (untuk pengguna yang belum login)
+      - Tombol hamburger menu untuk membuka slide-out navigation drawer
+
+    State autentikasi (logged in / logged out) dikelola sepenuhnya oleh JavaScript
+    yang membaca localStorage — bukan dari session Laravel server-side.
+
+    Cara penggunaan:
+      @include('partials.navbar')
+--}}
+
 <nav class="bg-[#0052cc] border-b border-blue-750 sticky top-0 z-50 shadow-lg text-white">
     <div class="max-w-screen-xl mx-auto px-4 flex items-center h-16 gap-3">
         

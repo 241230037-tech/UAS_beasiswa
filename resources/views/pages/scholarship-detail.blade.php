@@ -1,10 +1,29 @@
+{{--
+    View: pages/scholarship-detail.blade.php
+
+    Halaman Detail Beasiswa — menampilkan informasi lengkap satu beasiswa.
+    Diakses dari URL: /scholarship/{id}
+
+    Data yang diterima dari PageController::scholarshipDetail():
+      - $scholarship : Array data satu beasiswa dari database (title, provider, image, dll.)
+      - $extra       : Array info tambahan statis dari ScholarshipData::extra($id), berisi:
+          - 'requirements' : Daftar persyaratan pendaftaran
+          - 'benefits'     : Daftar manfaat/fasilitas beasiswa
+          - 'about'        : Deskripsi panjang tentang beasiswa
+
+    Template yang di-extend: layouts/app.blade.php
+    Partial yang digunakan: partials/navbar
+--}}
+
 @extends('layouts.app')
 
 @section('title', $scholarship['title'].' - Beasiswapedia')
 
 @section('content')
 @php
+    // Tentukan warna badge status: hijau jika dibuka, biru jika akan datang atau lainnya
     $statusColor = ($scholarship['status'] ?? '') === 'Dibuka' ? 'bg-green-500' : 'bg-blue-500';
+    // Data timeline proses seleksi beasiswa (statis untuk contoh tampilan)
     $timelineSteps = [
         ['label' => 'Pembukaan Pendaftaran', 'date' => '1 Juni 2026', 'active' => true],
         ['label' => 'Deadline Pengiriman Berkas', 'date' => 'Sesuai beasiswa', 'active' => true],
@@ -13,6 +32,7 @@
         ['label' => 'Keberangkatan / Mulai Studi', 'date' => 'Oktober 2026', 'active' => false],
     ];
 @endphp
+{{-- Container utama halaman detail beasiswa --}}
 <div class="min-h-screen bg-background">
     @include('partials.navbar')
 

@@ -1,3 +1,27 @@
+{{--
+    View: pages/home.blade.php
+
+    Halaman Beranda (Home) Portal Beasiswa Beasiswapedia.
+    Menampilkan:
+      - Slider/Carousel hero dengan slide beasiswa atau video promosi
+      - Iklan banner yang dikelompokkan berdasarkan posisi (top/bottom)
+      - Grid katalog semua beasiswa dengan tombol bookmark
+      - Footer informasi website
+
+    Data yang diterima dari PageController::home():
+      - $scholarships  : Array semua beasiswa dari database
+      - $carouselItems : Array slide carousel yang diurutkan berdasarkan order_index
+      - $topAds        : Array iklan dengan posisi 'top' (tampil di atas konten)
+      - $bottomAds     : Array iklan dengan posisi 'bottom' (tampil di bawah konten)
+
+    Template yang di-extend: layouts/app.blade.php
+    Partial yang digunakan:
+      - partials/navbar           : Navbar navigasi atas
+      - partials/ad-slot          : Kartu iklan individual
+      - partials/scholarship-card : Kartu beasiswa individual
+      - partials/footer           : Footer website
+--}}
+
 @extends('layouts.app')
 
 @section('title', 'Beranda - Beasiswapedia')

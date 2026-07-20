@@ -1,4 +1,18 @@
-{{-- Footer Website Premium & Aesthetic (Tugas 11 & Request 5 & Theme Unification) --}}
+{{--
+    Partial: partials/footer.blade.php
+
+    Komponen Footer Website Beasiswapedia.
+    Menampilkan:
+      - Branding & deskripsi platform
+      - Tautan sosial media interaktif
+      - Navigasi cepat halaman (Beranda, Katalog, Dashboard, Tentang Kami)
+      - Kategori beasiswa berdasarkan jenjang studi (S1, S2, S3)
+      - Info kontak & bantuan (email, telepon, alamat)
+      - Hak cipta & tautan kebijakan privasi
+
+    Cara penggunaan:
+      @include('partials.footer')
+--}}
 <footer class="relative mt-20 border-t-2 border-blue-800 bg-gradient-to-b from-[#003b99] via-[#002b70] to-[#001f52] text-blue-100 overflow-hidden">
     {{-- Hiasan Lingkaran Blur Latar Belakang (Aesthetic glow effects) --}}
     <div class="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
