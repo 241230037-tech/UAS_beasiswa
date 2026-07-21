@@ -931,7 +931,7 @@ class PageController extends Controller
         $user = User::where('email', $emailInput)->first();
 
         if ($user && Hash::check($password, $user->password)) {
-            // Loginkan user ke session Laravel
+            // Login user ke session Laravel
             Auth::login($user);
 
             return response()->json([
@@ -953,7 +953,7 @@ class PageController extends Controller
 
     /**
      * API Registrasi Berbasis Database.
-     * Menyimpan data pengguna baru ke tabel users dengan role 'user'.
+     * Menyimpan data pengguna baru ke dalam tabel users dengan role 'user'.
      */
     public function apiRegister(Request $request): JsonResponse
     {
@@ -963,7 +963,7 @@ class PageController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        // Simpan data pengguna baru ke database tanpa otomatis login
+        // Menyimpan data pengguna baru ke database tanpa otomatis login
         $user = User::create([
             'name' => trim($data['name']),
             'email' => trim($data['email']),
