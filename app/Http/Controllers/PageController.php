@@ -192,7 +192,7 @@ class PageController extends Controller
 
     /**
      * Memproses pengiriman formulir lamaran pendaftaran beasiswa (POST).
-     * Melakukan validasi berkas (ukuran, ekstensi) dan menyimpannya di folder storage.
+     * Melakukan validasi berkas (ukuran, ekstensi) dan menyimpannya di dalam folder storage.
      */
     public function submitRegistration(Request $request): JsonResponse
     {
@@ -226,7 +226,7 @@ class PageController extends Controller
         $transcriptPath = $request->file('transcript')->store('uploads', 'public');
         $cvPath = $request->hasFile('cv') ? $request->file('cv')->store('uploads', 'public') : null;
 
-        // Menyimpan data pendaftaran lamaran beasiswa ke database SQLite
+        // Menyimpan data pendaftaran lamaran beasiswa ke dalam database SQLite
         $application = ScholarshipApplication::create([
             'scholarship_id' => $data['scholarship_id'],
             'scholarship_title' => $data['scholarship_title'],
@@ -259,7 +259,7 @@ class PageController extends Controller
     }
 
     /**
-     * Menampilkan halaman panduan dan tutorial pendaftaran beasiswa.
+     * Menampilkan halaman panduan dan tutorial pendaftaran beasiswa di beasiswapedia.
      */
     public function tutorial(): View
     {
