@@ -1,3 +1,33 @@
+{{--
+    View: pages/admin.blade.php
+
+    Halaman Dashboard Panel Administrasi Beasiswapedia.
+    Menampilkan tab-tab manajemen data:
+      1. Beasiswa     : CRUD data beasiswa (tambah, edit, hapus, upload logo)
+      2. Spanduk Iklan: CRUD iklan banner (tambah, edit, hapus, upload gambar/video)
+      3. Carousel     : CRUD slide slider (tambah, edit, hapus, upload video chunked)
+      4. Admin        : CRUD akun administrator (tambah, edit, hapus)
+      5. Pengguna     : Daftar akun pengguna terdaftar (read-only)
+
+    Data yang diterima dari PageController::admin():
+      - $scholarships  : Array semua beasiswa dari database
+      - $adBanners     : Array semua iklan dari database
+      - $admins        : Array semua akun dengan role 'admin'
+      - $users         : Array semua akun dengan role 'user'
+      - $carouselItems : Array semua slide carousel dari database
+      - $phpUploadMax  : String batas upload_max_filesize dari php.ini
+      - $phpPostMax    : String batas post_max_size dari php.ini
+
+    Semua operasi CRUD dilakukan via AJAX (fetch API) ke endpoint:
+      - ScholarshipController  : POST/PUT/DELETE /admin/scholarships/{id}
+      - AdBannerController     : POST/PUT/DELETE /admin/ads/{id}
+      - CarouselController     : POST/PUT/DELETE /admin/carousel/{id}
+      - AdminController        : POST/PUT/DELETE /admin/admins/{id}
+
+    Template yang di-extend: layouts/app.blade.php
+    Partial yang digunakan: partials/navbar
+--}}
+
 @extends('layouts.app')
 
 @section('title', 'Admin Dashboard - Beasiswapedia')

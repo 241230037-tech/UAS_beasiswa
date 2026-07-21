@@ -1,3 +1,23 @@
+{{--
+    View: pages/login.blade.php
+
+    Halaman Login, Registrasi Akun Baru, dan Login Admin Beasiswapedia.
+    Menggunakan desain split-screen: sisi kiri panel visual promosi, sisi kanan form interaktif.
+    Tiga mode tampilan dikontrol oleh class CSS pada #login-page-container:
+      - mode-login  : Form login pengguna biasa
+      - mode-register : Form registrasi akun baru
+      - mode-admin  : Form login khusus administrator
+
+    Data yang diterima dari PageController::login():
+      - $redirect : URL tujuan redirect setelah login berhasil (default: '/home')
+      - $role     : Role awal tampilan form ('admin' = tampilkan mode admin, '' = mode login biasa)
+
+    Autentikasi dilakukan via AJAX POST ke /api/login atau /api/register.
+    Tidak menggunakan form submission tradisional (tidak ada redirect server-side).
+
+    Template yang di-extend: layouts/app.blade.php
+--}}
+
 @extends('layouts.app')
 
 @section('title', 'Login - Beasiswapedia')

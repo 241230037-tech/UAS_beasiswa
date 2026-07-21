@@ -7,27 +7,29 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Menjalankan migrasi untuk membuat tabel slide carousel (carousel_items).
      */
     public function up(): void
     {
         Schema::create('carousel_items', function (Blueprint $table) {
             $table->id();
-            $table->string('type'); // 'scholarship' atau 'video'
+            $table->string('type');  // Jenis slide: 'scholarship' (beasiswa) atau 'video'
             $table->foreignId('scholarship_id')->nullable()->constrained('scholarships')->onDelete('cascade');
-            $table->string('title')->nullable();
-            $table->string('subtitle')->nullable();
-            $table->text('description')->nullable();
-            $table->string('image_url')->nullable();
-            $table->text('video_url')->nullable(); // Menampung link embed iframe video atau video file
-            $table->string('link')->nullable();
-            $table->integer('order_index')->default(0);
-            $table->timestamps();
+            // scholarship_id: ID beasiswa terkait (opsional, hanya untuk tipe 'scholarship')
+            // onDelete('cascade'): jika beasiswa dihapus, slide carousel ikut terhapus otomatis
+            $table->string('title')->nullable();          // Judul slide (opsional)
+            $table->string('subtitle')->nullable();       // Sub-judul slide (opsional)
+            $table->text('description')->nullable();      // Deskripsi slide (opsional)
+            $table->string('image_url')->nullable();      // URL gambar latar slide (opsional)
+            $table->text('video_url')->nullable();        // URL video slide — bisa berupa path lokal atau URL eksternal
+            $table->string('link')->nullable();           // URL tujuan saat slide diklik (opsional)
+            $table->integer('order_index')->default(0);  // Urutan tampil slide (0 = pertama)
+            $table->timestamps();                         // Kolom created_at dan updated_at otomatis
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Membatalkan migrasi (menghapus tabel carousel_items jika rollback).
      */
     public function down(): void
     {

@@ -1838,7 +1838,7 @@
           document.getElementById('ad-field-bg-to').value = ad.bg_to;
           document.getElementById('ad-field-cta-text').value = ad.cta_text;
           document.getElementById('ad-field-link').value = ad.link;
-          document.getElementById('ad-field-position').value = ad.position || 'bottom'; // Pre-populate position - Request 5
+          document.getElementById('ad-field-position').value = ad.position || 'bottom'; // Isi otomatis posisi penempatan iklan di form modal edit
 
           document.getElementById('ad-modal-title').textContent = 'Edit Spanduk Iklan';
           modalAd.classList.remove('hidden');
@@ -1902,7 +1902,7 @@
           cta_text:    document.getElementById('ad-field-cta-text').value.trim(),
           link:        document.getElementById('ad-field-link').value.trim(),
           image_url:   document.getElementById('ad-field-image-url') ? document.getElementById('ad-field-image-url').value : null,
-          position:    document.getElementById('ad-field-position').value, // Submit position - Request 5
+          position:    document.getElementById('ad-field-position').value, // Mengirimkan pilihan posisi penempatan iklan (atas/bawah)
         };
 
         var url = id ? '/admin/ads/' + id : '/admin/ads';
@@ -2016,7 +2016,7 @@
       });
     }
 
-    // Toggle Tipe Sumber Video (Iframe vs File Upload) - Request 7
+    // Peralihan opsi sumber video: Embed Kode Iframe vs Upload Berkas Video Lokal
     var carouselVideoSourceType = document.getElementById('carousel-video-source-type');
     var carouselVideoUrlContainer = document.getElementById('carousel-video-url-container');
     var carouselVideoFileContainer = document.getElementById('carousel-video-file-container');

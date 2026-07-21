@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * File: app/Data/ScholarshipData.php
+ *
+ * Kelas ini menyediakan data statis (tidak berubah) yang digunakan sebagai:
+ *   1. Data awal saat menjalankan seeder database (php artisan db:seed).
+ *   2. Data fallback (cadangan) ketika tabel di database masih kosong.
+ *   3. Data informasi tambahan (syarat, manfaat, tutorial) yang belum dikelola via database.
+ *
+ * Method yang tersedia:
+ *   - all()            : Mengembalikan array semua data beasiswa statis
+ *   - find($id)        : Mencari satu beasiswa berdasarkan ID
+ *   - extra($id)       : Mengembalikan info tambahan (syarat, manfaat, deskripsi) per beasiswa
+ *   - adBanners()      : Mengembalikan data iklan/spanduk untuk seeder
+ *   - carouselItems()  : Mengembalikan data slide carousel untuk seeder
+ *   - tutorialSteps()  : Mengembalikan langkah-langkah tutorial pendaftaran beasiswa
+ */
+
 namespace App\Data;
 
 class ScholarshipData
