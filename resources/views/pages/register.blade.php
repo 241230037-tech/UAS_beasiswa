@@ -152,7 +152,7 @@
                             <div id="preview-ijazah" class="mt-2.5 hidden p-3 border border-border rounded-xl bg-muted/40 flex items-center gap-3"></div>
                         </div>
 
-                        {{-- Transkrip --}}
+                        {{-- Transkrip Nilai --}}
                         <div class="flex flex-col">
                             <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Upload Transkrip Nilai *</label>
                             <input type="file" name="transcript" data-preview-id="preview-transcript" accept=".pdf,.jpg,.jpeg,.png" required class="portal-input file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-[#e53935] file:text-white file:text-xs">
@@ -166,7 +166,7 @@
                             <div id="preview-cv" class="mt-2.5 hidden p-3 border border-border rounded-xl bg-muted/40 flex items-center gap-3"></div>
                         </div>
 
-                        {{-- Motivation --}}
+                        {{-- Motivasi --}}
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Motivation Letter / Esai *</label>
                             <textarea name="motivation" required rows="5" class="portal-input resize-none" placeholder="Ceritakan alasan Anda layak mendapatkan beasiswa ini, rencana studi, dan kontribusi pasca studi..."></textarea>
@@ -174,7 +174,7 @@
                     </div>
                 </div>
 
-                {{-- Persetujuan --}}
+                {{-- Checkbox Persetujuan --}}
                 <div class="bg-muted/50 rounded-xl p-4 border border-border">
                     <label class="flex items-start gap-3 cursor-pointer text-sm text-muted-foreground">
                         <input type="checkbox" name="agreement" required class="mt-1 rounded accent-[#0052cc]">

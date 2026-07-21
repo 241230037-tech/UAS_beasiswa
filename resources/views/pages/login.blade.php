@@ -177,7 +177,7 @@
                     <a href="#" class="text-accent-primary hover:opacity-85 transition-opacity" id="btn-forgot-password">Lupa password?</a>
                 </div>
 
-                <!-- Tombol Submit Form -->
+                <!-- Tombol Submit Form Login-->
                 <button type="submit" id="login-submit" class="w-full text-white py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] text-xs">
                     Masuk
                 </button>
