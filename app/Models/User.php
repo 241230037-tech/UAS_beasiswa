@@ -43,7 +43,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
  * Hanya 'name', 'email', dan 'password' yang diizinkan oleh $fillable.
  * Kolom 'role' sengaja tidak disertakan di sini — diset secara eksplisit di controller.
  */
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'last_opened_at', 'deactivation_at'])]
 
 /**
  * Mendefinisikan kolom yang disembunyikan dari serialisasi JSON/array.

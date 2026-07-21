@@ -170,4 +170,26 @@ class AdBannerController extends Controller
             'path'    => $path,                       // Path relatif untuk referensi internal
         ]);
     }
+
+    /**
+     * Melacak klik iklan, meningkatkan nilai visits, dan mengalihkan ke link asli iklan.
+     *
+     * Endpoint: GET /ad/click/{id}
+     *
+     * @param  int  $id  ID iklan yang diklik.
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function trackClick(int $id)
+    {
+        $ad = AdBanner::find($id);
+        if ($ad) {
+            try {
+                $ad->increment('visits');
+            } catch (\Throwable $e) {
+                // Abaikan error jika kolom belum siap
+            }
+            return redirect($ad->link);
+        }
+        return redirect('/home');
+    }
 }

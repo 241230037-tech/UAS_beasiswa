@@ -1231,25 +1231,60 @@
       chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
     }
 
+    function appendTypingIndicator() {
+      var wrapper = document.createElement('div');
+      wrapper.id = 'chatbot-typing-indicator';
+      wrapper.className = 'flex gap-2.5 max-w-[85%]';
+      wrapper.innerHTML = '<div class="w-7 h-7 rounded-full bg-[#e53935]/10 border border-[#e53935]/20 flex items-center justify-center text-[#e53935] shrink-0">' +
+        '<i data-lucide="bot" class="w-3.5 h-3.5"></i></div>' +
+        '<div class="bg-muted text-foreground rounded-tl-none px-3.5 py-2.5 rounded-2xl text-xs flex items-center gap-1.5 shadow-sm">' +
+        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce"></span>' +
+        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce [animation-delay:0.2s]"></span>' +
+        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce [animation-delay:0.4s]"></span>' +
+        '</div>';
+      chatbotMessages.appendChild(wrapper);
+      if (window.lucide) lucide.createIcons();
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      var el = document.getElementById('chatbot-typing-indicator');
+      if (el) el.remove();
+    }
+
+    function sendAiMessage(query) {
+      appendMessage(query, 'user');
+      if (chatbotInput) chatbotInput.value = '';
+      appendTypingIndicator();
+
+      fetch('/api/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify({ message: query })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        removeTypingIndicator();
+        if (data.reply) {
+          appendMessage(data.reply, 'bot');
+        } else {
+          appendMessage("Maaf, terjadi kesalahan saat menghubungi server AI.", 'bot');
+        }
+      })
+      .catch(function() {
+        removeTypingIndicator();
+        appendMessage("Maaf, jaringan Anda terputus atau terjadi kesalahan sistem.", 'bot');
+      });
+    }
+
     function handleChatbotSubmit() {
       var query = chatbotInput.value.trim();
       if (!query) return;
 
-      appendMessage(query, 'user');
-      chatbotInput.value = '';
-
-      setTimeout(function() {
-        var lower = query.toLowerCase();
-        var reply = "Maaf, saya tidak mengerti pertanyaan tersebut. Coba gunakan tombol pertanyaan populer di bawah untuk respon instan!";
-        
-        for (var key in responses) {
-          if (lower.indexOf(key) !== -1 || key.indexOf(lower) !== -1) {
-            reply = responses[key];
-            break;
-          }
-        }
-        appendMessage(reply, 'bot');
-      }, 500);
+      sendAiMessage(query);
     }
 
     if (btnSendChatbot) btnSendChatbot.addEventListener('click', handleChatbotSubmit);
@@ -1259,13 +1294,8 @@
 
     document.querySelectorAll('.chatbot-chip').forEach(function(chip) {
       chip.addEventListener('click', function() {
-        var text = chip.textContent;
-        appendMessage(text, 'user');
-        
-        setTimeout(function() {
-          var reply = responses[text.toLowerCase()] || "Respon tidak ditemukan.";
-          appendMessage(reply, 'bot');
-        }, 300);
+        var text = chip.textContent.trim();
+        sendAiMessage(text);
       });
     });
   }
@@ -1283,19 +1313,29 @@
     var tabScholarships = document.getElementById('tab-manage-scholarships');
     var tabAds = document.getElementById('tab-manage-ads');
     var tabCarousel = document.getElementById('tab-manage-carousel'); // Request 2
-    var tabAdmins = document.getElementById('tab-manage-admins');
-    var tabUsers = document.getElementById('tab-view-users');
+    var tabUsers = document.getElementById('tab-manage-users');
 
     var sectionScholarships = document.getElementById('section-scholarships');
     var sectionAds = document.getElementById('section-ads');
     var sectionCarousel = document.getElementById('section-carousel'); // Request 2
-    var sectionAdmins = document.getElementById('section-admins');
     var sectionUsers = document.getElementById('section-users');
+
+    var subtabNormalUsers = document.getElementById('subtab-normal-users');
+    var subtabAdmins = document.getElementById('subtab-admins');
+    var subsectionNormalUsers = document.getElementById('subsection-normal-users');
+    var subsectionAdmins = document.getElementById('subsection-admins');
 
     var btnAddScholarship = document.getElementById('btn-add-scholarship');
     var btnAddAd = document.getElementById('btn-add-ad');
     var btnAddCarousel = document.getElementById('btn-add-carousel'); // Request 2
     var btnAddAdmin = document.getElementById('btn-add-admin');
+
+    // Modal deactivation elements
+    var modalDeactivation = document.getElementById('deactivation-modal');
+    var btnCloseDeactivationModal = document.getElementById('btn-close-deactivation-modal');
+    var backdropDeactivationModal = document.getElementById('deactivation-modal-backdrop');
+    var formDeactivation = document.getElementById('deactivation-form');
+    var btnClearDeactivation = document.getElementById('btn-clear-deactivation');
 
     // Menghubungkan tabs dengan elemen tombol aksinya masing-masing (Tugas 9)
     function setActiveTab(activeTabId) {
@@ -1303,8 +1343,7 @@
         { id: 'tab-manage-scholarships', btn: tabScholarships, section: sectionScholarships, addBtn: btnAddScholarship },
         { id: 'tab-manage-ads', btn: tabAds, section: sectionAds, addBtn: btnAddAd },
         { id: 'tab-manage-carousel', btn: tabCarousel, section: sectionCarousel, addBtn: btnAddCarousel },
-        { id: 'tab-manage-admins', btn: tabAdmins, section: sectionAdmins, addBtn: btnAddAdmin },
-        { id: 'tab-view-users', btn: tabUsers, section: sectionUsers, addBtn: null }
+        { id: 'tab-manage-users', btn: tabUsers, section: sectionUsers, addBtn: null }
       ];
 
       tabs.forEach(function(tab) {
@@ -1319,13 +1358,39 @@
           if (tab.addBtn) tab.addBtn.classList.add('hidden');
         }
       });
+
+      // Sinkronisasi tombol Tambah Admin berdasarkan subtab
+      if (activeTabId === 'tab-manage-users') {
+        var isSubtabAdmin = subtabAdmins && subtabAdmins.classList.contains('bg-[#e53935]');
+        if (btnAddAdmin) btnAddAdmin.classList.toggle('hidden', !isSubtabAdmin);
+      } else {
+        if (btnAddAdmin) btnAddAdmin.classList.add('hidden');
+      }
     }
 
     if (tabScholarships) tabScholarships.addEventListener('click', function() { setActiveTab('tab-manage-scholarships'); });
     if (tabAds) tabAds.addEventListener('click', function() { setActiveTab('tab-manage-ads'); });
     if (tabCarousel) tabCarousel.addEventListener('click', function() { setActiveTab('tab-manage-carousel'); });
-    if (tabAdmins) tabAdmins.addEventListener('click', function() { setActiveTab('tab-manage-admins'); });
-    if (tabUsers) tabUsers.addEventListener('click', function() { setActiveTab('tab-view-users'); });
+    if (tabUsers) tabUsers.addEventListener('click', function() { setActiveTab('tab-manage-users'); });
+
+    // Subtab event listeners
+    if (subtabNormalUsers && subtabAdmins) {
+      subtabNormalUsers.addEventListener('click', function() {
+        subtabNormalUsers.className = 'px-4 py-2 rounded-xl text-xs font-black bg-[#e53935] text-white transition-all';
+        subtabAdmins.className = 'px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground transition-all';
+        if (subsectionNormalUsers) subsectionNormalUsers.classList.remove('hidden');
+        if (subsectionAdmins) subsectionAdmins.classList.add('hidden');
+        if (btnAddAdmin) btnAddAdmin.classList.add('hidden');
+      });
+
+      subtabAdmins.addEventListener('click', function() {
+        subtabAdmins.className = 'px-4 py-2 rounded-xl text-xs font-black bg-[#e53935] text-white transition-all';
+        subtabNormalUsers.className = 'px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground transition-all';
+        if (subsectionAdmins) subsectionAdmins.classList.remove('hidden');
+        if (subsectionNormalUsers) subsectionNormalUsers.classList.add('hidden');
+        if (btnAddAdmin) btnAddAdmin.classList.remove('hidden');
+      });
+    }
 
     // Memuat data akun admin dan pengguna dari data attribute (Tugas 9)
     var admins = JSON.parse(page.dataset.initialAdmins || '[]');
@@ -1441,16 +1506,101 @@
       }
       if (emptyUser) emptyUser.classList.add('hidden');
 
+      var activeDaysSetting = parseInt(page.dataset.initialAccountActiveDays || '30');
+
       tbodyUser.innerHTML = list.map(function(u) {
         var dateJoined = u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+        
+        var lastOpened = u.last_opened_at 
+          ? new Date(u.last_opened_at).toLocaleString('id-ID', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'})
+          : '<span class="text-amber-500 font-bold italic">Belum pernah dibuka</span>';
+
+        // Deteksi apakah akun sudah kadaluarsa (global / individual)
+        var isDead = false;
+        if (!u.last_opened_at) {
+          if (activeDaysSetting > 0 && u.created_at) {
+            var createdTime = new Date(u.created_at).getTime();
+            var expiryTime = createdTime + (activeDaysSetting * 24 * 60 * 60 * 1000);
+            if (Date.now() > expiryTime) {
+              isDead = true;
+            }
+          }
+          if (u.deactivation_at && Date.now() > new Date(u.deactivation_at).getTime()) {
+            isDead = true;
+          }
+        }
+
+        var statusBadge = isDead 
+          ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">Kadaluarsa</span>'
+          : (u.last_opened_at ? '<span class="px-2 py-0.5 rounded bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400 text-[10px] font-bold uppercase tracking-wider">Aktif</span>' : '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider">Menunggu Login</span>');
+
         return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
           '<td class="p-4 font-semibold text-muted-foreground">' + u.id + '</td>' +
           '<td class="p-4 font-bold text-foreground">' + u.name + '</td>' +
           '<td class="p-4 text-muted-foreground">' + u.email + '</td>' +
           '<td class="p-4 text-muted-foreground font-semibold">' + dateJoined + '</td>' +
-          '<td class="p-4"><span class="px-2 py-0.5 rounded bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400 text-[10px] font-bold uppercase tracking-wider">USER</span></td>' +
-          '</tr>';
+          '<td class="p-4 text-muted-foreground font-semibold">' + lastOpened + '</td>' +
+          '<td class="p-4">' + statusBadge + '</td>' +
+          '<td class="p-4 text-right whitespace-nowrap">' +
+          '<button type="button" class="btn-delete-user text-red-500 hover:text-red-700 font-bold" data-id="' + u.id + '">Hapus</button>' +
+          '</td></tr>';
       }).join('');
+
+      tbodyUser.querySelectorAll('.btn-delete-user').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var userId = parseInt(btn.dataset.id);
+          if (confirm('Apakah Anda yakin ingin menghapus akun pengguna biasa ini?')) {
+            fetch('/admin/users/' + userId, {
+              method: 'DELETE',
+              headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                users = users.filter(function(item) { return item.id !== userId; });
+                toast(data.message, 'success');
+                renderUsersTable(searchInputUser ? searchInputUser.value : '');
+              } else {
+                toast(data.message || 'Gagal menghapus akun pengguna.', 'error');
+              }
+            })
+            .catch(function() {
+              toast('Gagal melakukan penghapusan akun.', 'error');
+            });
+          }
+        });
+      });
+    }
+
+    // Form Pengaturan Global Masa Aktif Akun
+    var formGlobalSettings = document.getElementById('global-settings-form');
+    if (formGlobalSettings) {
+      formGlobalSettings.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var daysVal = parseInt(document.getElementById('global-field-active-days').value || '0');
+        
+        fetch('/admin/settings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify({ account_active_days: daysVal })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success) {
+            page.dataset.initialAccountActiveDays = String(daysVal);
+            toast(data.message, 'success');
+            renderUsersTable(searchInputUser ? searchInputUser.value : '');
+          } else {
+            toast(data.message || 'Gagal menyimpan pengaturan global.', 'error');
+          }
+        })
+        .catch(function() {
+          toast('Terjadi kesalahan sistem saat menyimpan pengaturan.', 'error');
+        });
+      });
     }
 
     // Modal & Form CRUD Admin
@@ -1542,6 +1692,82 @@
       });
     }
 
+    // Event deactivation modal
+    function closeDeactivationModal() {
+      if (modalDeactivation) modalDeactivation.classList.add('hidden');
+    }
+    if (btnCloseDeactivationModal) btnCloseDeactivationModal.addEventListener('click', closeDeactivationModal);
+    if (backdropDeactivationModal) backdropDeactivationModal.addEventListener('click', closeDeactivationModal);
+
+    if (formDeactivation) {
+      formDeactivation.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var userId = document.getElementById('deactivation-field-user-id').value;
+        var deacDateTime = document.getElementById('deactivation-field-datetime').value;
+
+        var payload = { deactivation_at: deacDateTime ? deacDateTime : null };
+
+        fetch('/admin/users/' + userId + '/deactivate', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) {
+          if (!res.ok) {
+            return res.json().then(function(err) { throw err; });
+          }
+          return res.json();
+        })
+        .then(function(data) {
+          if (data.success) {
+            var parsedId = parseInt(userId);
+            users = users.map(function(item) { return item.id === parsedId ? data.data : item; });
+            toast(data.message, 'success');
+            closeDeactivationModal();
+            renderUsersTable(searchInputUser ? searchInputUser.value : '');
+          } else {
+            toast(data.message || 'Gagal menyimpan.', 'error');
+          }
+        })
+        .catch(function(err) {
+          toast(err.message || 'Terjadi kesalahan sistem.', 'error');
+        });
+      });
+    }
+
+    if (btnClearDeactivation) {
+      btnClearDeactivation.addEventListener('click', function() {
+        var userId = document.getElementById('deactivation-field-user-id').value;
+        
+        fetch('/admin/users/' + userId + '/deactivate', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify({ deactivation_at: null })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success) {
+            var parsedId = parseInt(userId);
+            users = users.map(function(item) { return item.id === parsedId ? data.data : item; });
+            toast('Batas waktu deaktifasi akun dihapus!', 'success');
+            closeDeactivationModal();
+            renderUsersTable(searchInputUser ? searchInputUser.value : '');
+          } else {
+            toast(data.message || 'Gagal menghapus.', 'error');
+          }
+        })
+        .catch(function() {
+          toast('Terjadi kesalahan jaringan.', 'error');
+        });
+      });
+    }
+
     // Panggil render tabel awal untuk admin dan pengguna
     renderAdminsTable();
     renderUsersTable();
@@ -1552,15 +1778,24 @@
     var modalBackdropS = document.getElementById('crud-modal-backdrop');
     var formS = document.getElementById('crud-form');
     var searchInputS = document.getElementById('admin-search-scholarships');
+    var sortSelectS = document.getElementById('admin-sort-scholarships');
     var tbodyS = document.getElementById('admin-scholarships-table-body');
     var emptyS = document.getElementById('admin-empty-scholarships');
 
     function renderScholarshipsTable(filterText) {
-      var list = scholarships;
+      var list = scholarships.slice();
       if (filterText) {
         var q = filterText.toLowerCase();
         list = list.filter(function(s) {
           return s.title.toLowerCase().includes(q) || s.provider.toLowerCase().includes(q);
+        });
+      }
+
+      // Filter urutkan berdasarkan paling banyak dikunjungi
+      var sortVal = sortSelectS ? sortSelectS.value : 'default';
+      if (sortVal === 'visits_desc') {
+        list.sort(function(a, b) {
+          return (b.visits || 0) - (a.visits || 0);
         });
       }
 
@@ -1582,6 +1817,7 @@
           '<td class="p-4 font-semibold">' + s.level + '</td>' +
           '<td class="p-4 text-muted-foreground flex items-center gap-1 mt-2.5">' + (s.flag || '🌐') + ' ' + s.location + '</td>' +
           '<td class="p-4 text-muted-foreground">' + s.deadline + '</td>' +
+          '<td class="p-4 text-center font-bold text-foreground">' + (s.visits || 0) + ' x</td>' +
           '<td class="p-4 ' + statusColor + '">' + s.status + '</td>' +
           '<td class="p-4 text-right whitespace-nowrap">' +
           '<button type="button" class="btn-edit-s text-blue-500 hover:text-blue-700 font-bold mr-3" data-id="' + s.id + '">Edit</button>' +
@@ -1777,6 +2013,12 @@
       });
     }
 
+    if (sortSelectS) {
+      sortSelectS.addEventListener('change', function() {
+        renderScholarshipsTable(searchInputS ? searchInputS.value : '');
+      });
+    }
+
     var ads = JSON.parse(page.dataset.initialAds || '[]');
     var btnAddAdEl = document.getElementById('btn-add-ad');
     var modalAd = document.getElementById('ad-modal');
@@ -1784,15 +2026,24 @@
     var modalBackdropAd = document.getElementById('ad-modal-backdrop');
     var formAd = document.getElementById('ad-form');
     var searchInputAd = document.getElementById('admin-search-ads');
+    var sortSelectAd = document.getElementById('admin-sort-ads');
     var tbodyAd = document.getElementById('admin-ads-table-body');
     var emptyAd = document.getElementById('admin-empty-ads');
 
     function renderAdsTable(filterText) {
-      var list = ads;
+      var list = ads.slice();
       if (filterText) {
         var q = filterText.toLowerCase();
         list = list.filter(function(ad) {
           return ad.title.toLowerCase().includes(q) || ad.description.toLowerCase().includes(q);
+        });
+      }
+
+      // Filter urutkan berdasarkan paling banyak dikunjungi
+      var sortVal = sortSelectAd ? sortSelectAd.value : 'default';
+      if (sortVal === 'visits_desc') {
+        list.sort(function(a, b) {
+          return (b.visits || 0) - (a.visits || 0);
         });
       }
 
@@ -1817,6 +2068,7 @@
           '<td class="p-4"><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-bold uppercase text-[9px]">' + ad.tag + '</span></td>' +
           '<td class="p-4">' + posBadge + '</td>' +
           '<td class="p-4 text-blue-500 font-semibold">' + ad.link + '</td>' +
+          '<td class="p-4 text-center font-bold text-foreground">' + (ad.visits || 0) + ' x</td>' +
           '<td class="p-4 text-right whitespace-nowrap">' +
           '<button type="button" class="btn-edit-ad text-blue-500 hover:text-blue-700 font-bold mr-3" data-id="' + ad.id + '">Edit</button>' +
           '<button type="button" class="btn-delete-ad text-red-500 hover:text-red-700 font-bold" data-id="' + ad.id + '">Hapus</button>' +
@@ -1886,6 +2138,12 @@
     }
     if (btnCloseModalAd) btnCloseModalAd.addEventListener('click', closeModalAd);
     if (modalBackdropAd) modalBackdropAd.addEventListener('click', closeModalAd);
+
+    if (sortSelectAd) {
+      sortSelectAd.addEventListener('change', function() {
+        renderAdsTable(searchInputAd ? searchInputAd.value : '');
+      });
+    }
 
     if (formAd) {
       formAd.addEventListener('submit', function(e) {

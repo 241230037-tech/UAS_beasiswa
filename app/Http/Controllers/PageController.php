@@ -228,6 +228,13 @@ class PageController extends Controller
             abort(404);
         }
 
+        // Tingkatkan jumlah kunjungan (visits) beasiswa ini
+        try {
+            $scholarship->increment('visits');
+        } catch (\Throwable $e) {
+            // Abaikan error jika kolom belum siap
+        }
+
         // Render halaman detail dengan data beasiswa dan info tambahan statis (syarat, manfaat, dll.)
         return view('pages.scholarship-detail', [
             'scholarship' => $scholarship->toArray(),
@@ -389,19 +396,18 @@ class PageController extends Controller
             $carouselItems = [];
         }
 
-        // Ambil batas ukuran upload dari konfigurasi PHP untuk ditampilkan di panel admin
-        $phpUploadMax = ini_get('upload_max_filesize'); // Batas ukuran file upload per request
-        $phpPostMax   = ini_get('post_max_size');       // Batas ukuran total POST body
+        $accountActiveDays = \App\Models\Setting::get('account_active_days', 30);
 
         // Render template panel admin dengan semua data yang diperlukan
         return view('pages.admin', [
-            'scholarships'  => $scholarships,  // Data beasiswa untuk tabel manajemen
-            'adBanners'     => $adBanners,     // Data iklan untuk tabel manajemen
-            'admins'        => $admins,        // Data akun admin untuk tabel manajemen
-            'users'         => $users,         // Data akun pengguna untuk tabel manajemen
-            'carouselItems' => $carouselItems, // Data slide carousel untuk tabel manajemen
-            'phpUploadMax'  => $phpUploadMax,  // Batas upload PHP (ditampilkan sebagai info di UI)
-            'phpPostMax'    => $phpPostMax,    // Batas POST PHP (ditampilkan sebagai info di UI)
+            'scholarships'      => $scholarships,  // Data beasiswa untuk tabel manajemen
+            'adBanners'         => $adBanners,     // Data iklan untuk tabel manajemen
+            'admins'            => $admins,        // Data akun admin untuk tabel manajemen
+            'users'             => $users,         // Data akun pengguna untuk tabel manajemen
+            'carouselItems'     => $carouselItems, // Data slide carousel untuk tabel manajemen
+            'accountActiveDays' => (int) $accountActiveDays, // Pengaturan global batas masa aktif akun
+            'phpUploadMax'      => $phpUploadMax,  // Batas upload PHP (ditampilkan sebagai info di UI)
+            'phpPostMax'        => $phpPostMax,    // Batas POST PHP (ditampilkan sebagai info di UI)
         ]);
     }
 }

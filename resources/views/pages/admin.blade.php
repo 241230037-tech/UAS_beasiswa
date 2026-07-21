@@ -41,7 +41,8 @@
         data-initial-ads='@json($adBanners)'
         data-initial-admins='@json($admins)'
         data-initial-users='@json($users)'
-        data-initial-carousel-items='@json($carouselItems)'>
+        data-initial-carousel-items='@json($carouselItems)'
+        data-initial-account-active-days="{{ $accountActiveDays ?? 30 }}">
 
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div>
@@ -89,18 +90,23 @@
             <button type="button" id="tab-manage-scholarships" class="px-5 py-3 border-b-2 border-[#e53935] font-black text-xs text-[#e53935] tracking-wide uppercase transition-all">Kelola Beasiswa</button>
             <button type="button" id="tab-manage-ads" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Iklan</button>
             <button type="button" id="tab-manage-carousel" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Slider</button>
-            <button type="button" id="tab-manage-admins" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Admin</button>
-            <button type="button" id="tab-view-users" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Data Pengguna</button>
+            <button type="button" id="tab-manage-users" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola User</button>
         </div>
 
         {{-- SECTION KELOLA BEASISWA --}}
         <div id="section-scholarships" class="space-y-4">
             <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
-                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
+                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between flex-wrap gap-3">
                     <h3 class="text-foreground font-black text-base">Daftar Beasiswa</h3>
-                    <div class="relative w-64">
-                        <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="admin-search-scholarships" placeholder="Cari beasiswa..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                    <div class="flex items-center gap-2">
+                        <select id="admin-sort-scholarships" class="bg-muted text-foreground px-3 py-2 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                            <option value="default">Urutkan: Default</option>
+                            <option value="visits_desc">Urutkan: Paling Banyak Dikunjungi</option>
+                        </select>
+                        <div class="relative w-48">
+                            <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-search-scholarships" placeholder="Cari beasiswa..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -113,6 +119,7 @@
                                 <th class="p-4 w-24">Tingkat</th>
                                 <th class="p-4 w-28">Lokasi</th>
                                 <th class="p-4 w-24">Deadline</th>
+                                <th class="p-4 w-20 text-center">Dikunjungi</th>
                                 <th class="p-4 w-24">Status</th>
                                 <th class="p-4 w-28 text-right">Aksi</th>
                             </tr>
@@ -131,11 +138,17 @@
         {{-- SECTION KELOLA IKLAN --}}
         <div id="section-ads" class="space-y-4 hidden">
             <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
-                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
+                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between flex-wrap gap-3">
                     <h3 class="text-foreground font-black text-base">Daftar Spanduk Iklan</h3>
-                    <div class="relative w-64">
-                        <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="admin-search-ads" placeholder="Cari iklan..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                    <div class="flex items-center gap-2">
+                        <select id="admin-sort-ads" class="bg-muted text-foreground px-3 py-2 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                            <option value="default">Urutkan: Default</option>
+                            <option value="visits_desc">Urutkan: Paling Banyak Dikunjungi</option>
+                        </select>
+                        <div class="relative w-48">
+                            <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-search-ads" placeholder="Cari iklan..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -149,6 +162,7 @@
                                 <th class="p-4 w-20">Tag</th>
                                 <th class="p-4 w-24">Posisi</th>
                                 <th class="p-4 w-32">Link Tujuan</th>
+                                <th class="p-4 w-20 text-center">Dikunjungi</th>
                                 <th class="p-4 w-28 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -196,66 +210,99 @@
             </div>
         </div>
 
-        {{-- SECTION KELOLA ADMIN --}}
-        <div id="section-admins" class="space-y-4 hidden">
-            <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
-                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
-                    <h3 class="text-foreground font-black text-base">Daftar Akun Administrator</h3>
-                    <div class="relative w-64">
-                        <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="admin-search-admins" placeholder="Cari admin..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+        {{-- SECTION KELOLA USER (Penyatuan Admin & Pengguna) --}}
+        <div id="section-users" class="space-y-4 hidden">
+            {{-- Sub-tab Navigation --}}
+            <div class="flex gap-2 border-b border-border/60 pb-2 overflow-x-auto whitespace-nowrap mb-4">
+                <button type="button" id="subtab-normal-users" class="px-4 py-2 rounded-xl text-xs font-black bg-[#e53935] text-white transition-all">Pengguna Biasa</button>
+                <button type="button" id="subtab-admins" class="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground transition-all">Administrator</button>
+            </div>
+
+            {{-- Sub-section Pengguna Biasa --}}
+            <div id="subsection-normal-users" class="space-y-4">
+                {{-- Card Pengaturan Global Masa Aktif Akun --}}
+                <div class="bg-card border-2 border-border rounded-2xl p-5 shadow-[4px_4px_0_0_rgba(0,0,0,0.06)]">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h4 class="text-sm font-black text-foreground flex items-center gap-2">
+                                <i data-lucide="shield-clock" class="w-4 h-4 text-[#e53935]"></i>
+                                Atur Batas Masa Aktif Akun (Global)
+                            </h4>
+                            <p class="text-xs text-muted-foreground mt-0.5">
+                                Tentukan berapa hari batas akun aktif setelah mendaftar jika tidak pernah dibuka/login (0 = tanpa batas).
+                            </p>
+                        </div>
+                        <form id="global-settings-form" class="flex items-center gap-2">
+                            <div class="relative w-36">
+                                <input type="number" id="global-field-active-days" value="{{ $accountActiveDays ?? 30 }}" min="0" class="w-full bg-muted text-foreground px-3 py-2 pr-12 rounded-xl border border-border text-xs font-bold focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">Hari</span>
+                            </div>
+                            <button type="submit" class="btn-3d-red px-4 py-2 rounded-xl text-xs font-bold cursor-pointer shrink-0">Simpan Pengaturan</button>
+                        </form>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-border bg-muted/20 text-muted-foreground font-bold uppercase tracking-wider">
-                                <th class="p-4 w-12">ID</th>
-                                <th class="p-4">Nama Lengkap</th>
-                                <th class="p-4">Alamat Email</th>
-                                <th class="p-4 w-32">Role</th>
-                                <th class="p-4 w-28 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-admins-table-body" class="divide-y divide-border">
-                            {{-- Rendered by JS --}}
-                        </tbody>
-                    </table>
-                </div>
-                <div id="admin-empty-admins" class="text-center py-12 text-muted-foreground hidden">
-                    <p class="text-sm">Tidak ada data administrator ditemukan.</p>
+
+                <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
+                    <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
+                        <h3 class="text-foreground font-black text-base">Daftar Pengguna Terdaftar</h3>
+                        <div class="relative w-64">
+                            <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-search-users" placeholder="Cari pengguna..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-border bg-muted/20 text-muted-foreground font-bold uppercase tracking-wider">
+                                    <th class="p-4 w-12">ID</th>
+                                    <th class="p-4">Nama Pengguna</th>
+                                    <th class="p-4">Alamat Email</th>
+                                    <th class="p-4 w-40">Tanggal Bergabung</th>
+                                    <th class="p-4 w-40">Terakhir Dibuka</th>
+                                    <th class="p-4 w-32">Status Akun</th>
+                                    <th class="p-4 w-24 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table-body" class="divide-y divide-border">
+                                {{-- Rendered by JS --}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="admin-empty-users" class="text-center py-12 text-muted-foreground hidden">
+                        <p class="text-sm">Tidak ada data pengguna ditemukan.</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- SECTION DATA PENGGUNA --}}
-        <div id="section-users" class="space-y-4 hidden">
-            <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
-                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
-                    <h3 class="text-foreground font-black text-base">Daftar Pengguna Terdaftar</h3>
-                    <div class="relative w-64">
-                        <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="admin-search-users" placeholder="Cari pengguna..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+            {{-- Sub-section Administrator --}}
+            <div id="subsection-admins" class="space-y-4 hidden">
+                <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
+                    <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between">
+                        <h3 class="text-foreground font-black text-base">Daftar Akun Administrator</h3>
+                        <div class="relative w-64">
+                            <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-search-admins" placeholder="Cari admin..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                        </div>
                     </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-border bg-muted/20 text-muted-foreground font-bold uppercase tracking-wider">
-                                <th class="p-4 w-12">ID</th>
-                                <th class="p-4">Nama Pengguna</th>
-                                <th class="p-4">Alamat Email</th>
-                                <th class="p-4 w-48">Tanggal Bergabung</th>
-                                <th class="p-4 w-32">Role</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-users-table-body" class="divide-y divide-border">
-                            {{-- Rendered by JS --}}
-                        </tbody>
-                    </table>
-                </div>
-                <div id="admin-empty-users" class="text-center py-12 text-muted-foreground hidden">
-                    <p class="text-sm">Tidak ada data pengguna ditemukan.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-border bg-muted/20 text-muted-foreground font-bold uppercase tracking-wider">
+                                    <th class="p-4 w-12">ID</th>
+                                    <th class="p-4">Nama Lengkap</th>
+                                    <th class="p-4">Alamat Email</th>
+                                    <th class="p-4 w-32">Role</th>
+                                    <th class="p-4 w-28 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-admins-table-body" class="divide-y divide-border">
+                                {{-- Rendered by JS --}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="admin-empty-admins" class="text-center py-12 text-muted-foreground hidden">
+                        <p class="text-sm">Tidak ada data administrator ditemukan.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -581,6 +628,39 @@
                     </div>
 
                     <button type="submit" class="w-full btn-3d-red py-3 rounded-xl text-sm font-bold shadow-lg shadow-red-500/10 cursor-pointer">Simpan Slide Carousel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL ATUR WAKTU MATI PENGGUNA --}}
+<div id="deactivation-modal" class="hidden">
+    <div class="modal-backdrop" id="deactivation-modal-backdrop"></div>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-card border-2 border-border rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden z-10 modal-box">
+            <div class="h-1.5 bg-[#e53935] w-full shrink-0"></div>
+            <button type="button" id="btn-close-deactivation-modal" class="absolute top-4 right-4 p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-6">
+                    <i data-lucide="calendar-clock" class="w-5 h-5 text-[#e53935]"></i>
+                    <h2 class="text-foreground font-black text-lg">Atur Batas Waktu Akun Mati</h2>
+                </div>
+                <form id="deactivation-form" class="space-y-4">
+                    <input type="hidden" id="deactivation-field-user-id">
+                    <div>
+                        <p class="text-xs text-muted-foreground mb-4">
+                            Tentukan kapan akun pengguna ini akan mati (dinonaktifkan secara permanen) jika mereka belum pernah membuka/login ke akun mereka. Biarkan kosong jika tidak ingin ada batas waktu.
+                        </p>
+                        <label class="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Batas Waktu Kadaluarsa</label>
+                        <input type="datetime-local" id="deactivation-field-datetime" class="portal-input">
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" id="btn-clear-deactivation" class="flex-1 btn-3d-outline py-2.5 rounded-xl text-xs font-bold cursor-pointer">Hapus Batas Waktu</button>
+                        <button type="submit" class="flex-1 btn-3d-red py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-red-500/10 cursor-pointer">Simpan Batas Waktu</button>
+                    </div>
                 </form>
             </div>
         </div>

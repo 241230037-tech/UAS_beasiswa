@@ -25,7 +25,7 @@
     @stack('head')
     @yield('head')
 </head>
-<body class="min-h-screen bg-background text-foreground antialiased">
+<body class="min-h-screen bg-background text-foreground antialiased page-entrance">
     <!-- Container untuk notifikasi Toast melayang -->
     <div id="toast-container"></div>
 

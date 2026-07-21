@@ -51,6 +51,39 @@ class AuthController extends Controller
 
         // Verifikasi: user ditemukan DAN password cocok dengan hash di database
         if ($user && Hash::check($password, $user->password)) {
+            // Cek apakah akun pengguna biasa tersebut mati (kadaluarsa global atau per akun)
+            if ($user->role === 'user' && is_null($user->last_opened_at)) {
+                $isDead = false;
+
+                // 1. Cek pengaturan global batas masa aktif akun (dalam hari)
+                $globalActiveDays = (int) \App\Models\Setting::get('account_active_days', 30);
+                if ($globalActiveDays > 0 && $user->created_at) {
+                    $expirationDate = \Carbon\Carbon::parse($user->created_at)->addDays($globalActiveDays);
+                    if (now()->greaterThan($expirationDate)) {
+                        $isDead = true;
+                    }
+                }
+
+                // 2. Cek deactivation_at khusus jika diatur secara individual
+                if (!empty($user->deactivation_at)) {
+                    $deactivateTime = \Carbon\Carbon::parse($user->deactivation_at);
+                    if (now()->greaterThan($deactivateTime)) {
+                        $isDead = true;
+                    }
+                }
+
+                if ($isDead) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Akun Anda telah dinonaktifkan/kadaluarsa karena tidak pernah dibuka/login selama batas masa aktif yang ditentukan.',
+                    ], 403);
+                }
+            }
+
+            // Perbarui last_opened_at menjadi waktu saat login sukses
+            $user->last_opened_at = now();
+            $user->save();
+
             // Login pengguna ke session Laravel
             Auth::login($user);
 

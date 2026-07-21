@@ -54,6 +54,10 @@
                     {{ $scholarship['level'] }}
                 </div>
             @endif
+            <div class="absolute bottom-4 right-4 px-3 py-1 text-xs font-bold text-white bg-[#0052cc] rounded-lg shadow-md flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                {{ $scholarship['visits'] ?? 0 }}x dikunjungi
+            </div>
         </div>
 
         <div class="card-3d p-6 rounded-2xl bg-card border-2 border-border mb-6">

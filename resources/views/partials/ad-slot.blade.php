@@ -26,7 +26,7 @@
 --}}
 
 {{-- Wrapper iklan sebagai anchor link yang dapat diklik, dengan gradient background dinamis --}}
-<a href="{{ $link ?? '#' }}" target="_blank" rel="noopener noreferrer"
+<a href="{{ isset($id) ? route('ad.click', $id) : ($link ?? '#') }}" target="_blank" rel="noopener noreferrer"
    class="block rounded-xl overflow-hidden relative group cursor-pointer select-none border border-border/20 shadow-[2px_2px_8px_rgba(0,0,0,0.1)] transition-transform duration-300 hover:-translate-y-0.5"
    style="background: linear-gradient(135deg, {{ $bg_from ?? '#0052cc' }}, {{ $bg_to ?? '#003b99' }})">
 

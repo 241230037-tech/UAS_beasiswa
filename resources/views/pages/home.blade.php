@@ -175,6 +175,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 @foreach($topAds as $ad)
                     @include('partials.ad-slot', [
+                        'id' => $ad['id'],
                         'title' => $ad['title'],
                         'subtitle' => $ad['subtitle'],
                         'description' => $ad['description'],
@@ -211,6 +212,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 @foreach($bottomAds as $ad)
                     @include('partials.ad-slot', [
+                        'id' => $ad['id'],
                         'title' => $ad['title'],
                         'subtitle' => $ad['subtitle'],
                         'description' => $ad['description'],

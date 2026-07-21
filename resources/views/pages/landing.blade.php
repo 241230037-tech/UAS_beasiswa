@@ -477,6 +477,7 @@
                 <div class="flex flex-col gap-6">
                     @if(isset($ads[0]))
                         @include('partials.ad-slot', [
+                            'id' => $ads[0]['id'] ?? null,
                             'title' => $ads[0]['title'],
                             'subtitle' => $ads[0]['subtitle'],
                             'description' => $ads[0]['description'],
@@ -490,6 +491,7 @@
                     @endif
                     @if(isset($ads[1]))
                         @include('partials.ad-slot', [
+                            'id' => $ads[1]['id'] ?? null,
                             'title' => $ads[1]['title'],
                             'subtitle' => $ads[1]['subtitle'],
                             'description' => $ads[1]['description'],
@@ -507,6 +509,7 @@
                 <div class="flex flex-col gap-6">
                     @if(isset($ads[2]))
                         @include('partials.ad-slot', [
+                            'id' => $ads[2]['id'] ?? null,
                             'title' => $ads[2]['title'],
                             'subtitle' => $ads[2]['subtitle'],
                             'description' => $ads[2]['description'],
@@ -520,6 +523,7 @@
                     @endif
                     @if(isset($ads[3]))
                         @include('partials.ad-slot', [
+                            'id' => $ads[3]['id'] ?? null,
                             'title' => $ads[3]['title'],
                             'subtitle' => $ads[3]['subtitle'],
                             'description' => $ads[3]['description'],

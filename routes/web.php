@@ -105,6 +105,10 @@ Route::delete('/admin/ads/{id}', [AdBannerController::class, 'destroy'])
 Route::post('/admin/ads/upload-image', [AdBannerController::class, 'uploadImage'])
     ->name('admin.ads.upload-image');
 
+// Pelacakan klik iklan dan redirect ke tautan tujuan
+Route::get('/ad/click/{id}', [AdBannerController::class, 'trackClick'])
+    ->name('ad.click');
+
 // ============================================================
 // GRUP 5: CRUD Carousel / Slider (Admin)
 // ============================================================
@@ -149,6 +153,22 @@ Route::put('/admin/admins/{id}', [AdminController::class, 'update'])
 // Hapus akun admin berdasarkan ID (tidak dapat menghapus diri sendiri)
 Route::delete('/admin/admins/{id}', [AdminController::class, 'destroy'])
     ->name('admin.admins.delete');
+
+// Hapus akun pengguna biasa berdasarkan ID
+Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser'])
+    ->name('admin.users.delete');
+
+// Atur waktu kadaluarsa/mati akun pengguna biasa berdasarkan ID
+Route::put('/admin/users/{id}/deactivate', [AdminController::class, 'setDeactivation'])
+    ->name('admin.users.deactivate');
+
+// Update pengaturan global (misal: batas masa aktif akun global)
+Route::put('/admin/settings', [AdminController::class, 'updateGlobalSettings'])
+    ->name('admin.settings.update');
+
+// API Asisten Chatbot AI
+Route::post('/api/chatbot', [\App\Http\Controllers\ChatbotController::class, 'respond'])
+    ->name('api.chatbot');
 
 // ============================================================
 // GRUP 7: Autentikasi Berbasis Database (Session)

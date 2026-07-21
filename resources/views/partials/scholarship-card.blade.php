@@ -56,6 +56,11 @@
         {{-- Badge status beasiswa di pojok kiri bawah dengan warna dinamis berdasarkan status --}}
         <div class="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-bold text-white rounded-full shadow {{ $statusColor }}">{{ $scholarship['status'] ?? 'Dibuka' }}</div>
 
+        {{-- Badge jumlah kunjungan (kotak biru kecil) di pojok kanan bawah gambar --}}
+        <div class="absolute bottom-2 right-2 px-2 py-0.5 text-[10px] font-bold text-white bg-[#0052cc] rounded-md shadow-sm flex items-center gap-1 z-10">
+            👁️ {{ $scholarship['visits'] ?? 0 }}x
+        </div>
+
         {{-- Overlay "Lihat Detail" yang muncul saat kartu di-hover --}}
         <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
             <span class="bg-[#0052cc] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-lg">Lihat Detail →</span>

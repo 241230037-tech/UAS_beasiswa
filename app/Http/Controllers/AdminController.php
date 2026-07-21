@@ -150,4 +150,91 @@ class AdminController extends Controller
             'message' => 'Akun admin berhasil dihapus!',
         ]);
     }
+
+    /**
+     * Menghapus akun Pengguna (role 'user') dari database berdasarkan ID.
+     *
+     * Endpoint: DELETE /admin/users/{id}
+     *
+     * @param  int  $id  ID akun pengguna yang akan dihapus.
+     * @return JsonResponse Respons sukses/gagal dalam format JSON.
+     */
+    public function destroyUser(int $id): JsonResponse
+    {
+        // Cari user berdasarkan ID dan pastikan role-nya adalah 'user'
+        $user = User::where('id', $id)->where('role', 'user')->first();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        // Hapus record akun pengguna dari database
+        $user->delete();
+
+        // Kembalikan respons sukses
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun pengguna berhasil dihapus!',
+        ]);
+    }
+
+    /**
+     * Mengatur batas waktu deaktif/mati akun Pengguna (role 'user').
+     *
+     * Endpoint: PUT /admin/users/{id}/deactivate
+     *
+     * @param  Request  $request
+     * @param  int      $id
+     * @return JsonResponse
+     */
+    public function setDeactivation(Request $request, int $id): JsonResponse
+    {
+        // Cari user berdasarkan ID dan pastikan role-nya adalah 'user'
+        $user = User::where('id', $id)->where('role', 'user')->first();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        // Validasi input deactivation_at (dapat berupa datetime string atau null)
+        $data = $request->validate([
+            'deactivation_at' => 'nullable|date',
+        ]);
+
+        // Perbarui deactivation_at
+        $user->deactivation_at = $data['deactivation_at'];
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Batas waktu deaktifasi akun pengguna berhasil diperbarui!',
+            'data'    => $user,
+        ]);
+    }
+
+    /**
+     * Memperbarui pengaturan global aplikasi (misal: batas masa aktif akun global).
+     *
+     * Endpoint: PUT /admin/settings
+     */
+    public function updateGlobalSettings(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'account_active_days' => 'required|numeric|min:0',
+        ]);
+
+        \App\Models\Setting::set('account_active_days', (string) $data['account_active_days']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengaturan batas masa aktif akun global berhasil diperbarui!',
+            'data'    => [
+                'account_active_days' => (int) $data['account_active_days'],
+            ],
+        ]);
+    }
 }
