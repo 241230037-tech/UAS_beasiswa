@@ -136,6 +136,23 @@
     if (overlay) overlay.classList.remove('hidden');
   }
 
+  // Buka chatbot TANPA overlay agar user tetap bisa scroll halaman
+  function openChatbot() {
+    var panel = document.getElementById('chatbot-panel');
+    if (panel) {
+      panel.classList.remove('panel-hidden');
+      panel.classList.add('panel-visible');
+    }
+    // Tutup side-menu jika terbuka, tapi JANGAN tampilkan overlay
+    var sideMenu = document.getElementById('side-menu');
+    if (sideMenu && sideMenu.classList.contains('panel-visible')) {
+      sideMenu.classList.add('panel-hidden');
+      sideMenu.classList.remove('panel-visible');
+      var overlay = document.getElementById('panel-overlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+  }
+
   function closePanels() {
     ['side-menu', 'settings-panel', 'chatbot-panel'].forEach(function (id) {
       var panel = document.getElementById(id);
@@ -201,11 +218,7 @@
     if (btnCloseMenu) btnCloseMenu.addEventListener('click', closePanels);
     if (overlay) overlay.addEventListener('click', closePanels);
 
-    if (btnChatbot) btnChatbot.addEventListener('click', function () {
-      closePanels();
-      openPanel('chatbot-panel');
-    });
-    if (btnCloseChatbot) btnCloseChatbot.addEventListener('click', closePanels);
+    // Chatbot dihandle oleh initChatbot() agar tidak ada konflik event listener
     if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
     if (navbarAvatar) navbarAvatar.addEventListener('click', openAccountModal);
     if (btnOpenAccount) btnOpenAccount.addEventListener('click', openAccountModal);
@@ -1180,6 +1193,9 @@
     }
   }
 
+  var ADMIN_WA = '6285751052374'; // Nomor WA Admin
+  var ADMIN_WA_DISPLAY = '0857-5105-2374';
+
   function initChatbot() {
     var btnChatbot = document.getElementById('btn-chatbot');
     var chatbotPanel = document.getElementById('chatbot-panel');
@@ -1187,41 +1203,127 @@
     var btnSendChatbot = document.getElementById('btn-send-chatbot');
     var chatbotInput = document.getElementById('chatbot-input');
     var chatbotMessages = document.getElementById('chatbot-messages');
-    var overlay = document.getElementById('panel-overlay');
 
+    // Buka chatbot TANPA overlay agar user tetap bisa scroll halaman
     if (btnChatbot) {
       btnChatbot.addEventListener('click', function() {
-        closePanels();
-        chatbotPanel.classList.remove('panel-hidden');
-        chatbotPanel.classList.add('panel-visible');
-        if (overlay) overlay.classList.remove('hidden');
+        openChatbot();
       });
     }
 
-    if (btnCloseChatbot) btnCloseChatbot.addEventListener('click', closePanels);
+    if (btnCloseChatbot) btnCloseChatbot.addEventListener('click', function() {
+      if (chatbotPanel) {
+        chatbotPanel.classList.add('panel-hidden');
+        chatbotPanel.classList.remove('panel-visible');
+      }
+    });
 
-    var responses = {
-      "bagaimana cara daftar beasiswa?": "Untuk mendaftar beasiswa:\n1. Masuk ke halaman **Katalog Beasiswa**.\n2. Pilih beasiswa yang Anda inginkan.\n3. Klik tombol **Daftar Beasiswa** (Anda harus login terlebih dahulu).\n4. Isi formulir pendaftaran lengkap dan unggah dokumen berkas Anda.",
-      "apa saja syarat unggahan ktp & berkas?": "Syarat unggahan berkas adalah:\n1. **KTP** (format JPG/PNG/PDF, ukuran maks 2MB).\n2. **Ijazah Terakhir** & **Transkrip Nilai** resmi.\n3. **CV** / Resume pendukung (opsional).\n4. **Motivation Letter** minimal 50 karakter.",
-      "bagaimana cara bookmark beasiswa?": "Untuk menyimpan beasiswa:\n1. Buka halaman detail beasiswa.\n2. Klik tombol **Simpan** (icon Bookmark).\n3. Beasiswa yang disimpan akan muncul di **Dashboard** Anda di bagian tab **Bookmark**.",
-      "bagaimana membuka link beasiswa resmi?": "Pada halaman detail beasiswa, silakan klik tombol **Kunjungi Website Resmi** di bawah judul beasiswa. Tautan tersebut akan mengarahkan Anda langsung ke portal resmi penyelenggara beasiswa di tab baru."
-    };
+    // Database respons chatbot yang lebih lengkap
+    var responses = [
+      {
+        keys: ['daftar beasiswa', 'cara daftar', 'mendaftar', 'pendaftaran'],
+        answer: 'Untuk mendaftar beasiswa:\n1. Buka halaman **Katalog Beasiswa**.\n2. Pilih beasiswa yang Anda minati.\n3. Klik tombol **Daftar Beasiswa** (login terlebih dahulu).\n4. Isi formulir & unggah dokumen lengkap.\n5. Klik **Kirim Pendaftaran**.'
+      },
+      {
+        keys: ['syarat berkas', 'ktp', 'dokumen', 'unggah', 'upload'],
+        answer: 'Syarat dokumen yang dibutuhkan:\n1. **KTP** (JPG/PNG/PDF, maks 2MB)\n2. **Ijazah** & **Transkrip Nilai** resmi\n3. **CV / Resume** (opsional)\n4. **Motivation Letter** minimal 50 karakter'
+      },
+      {
+        keys: ['bookmark', 'simpan beasiswa', 'favorit'],
+        answer: 'Cara menyimpan beasiswa ke bookmark:\n1. Buka halaman **Detail Beasiswa**.\n2. Klik tombol **Simpan** (ikon bookmark).\n3. Lihat beasiswa tersimpan di **Dashboard → Tab Bookmark**.'
+      },
+      {
+        keys: ['link resmi', 'website resmi', 'kunjungi', 'buka link'],
+        answer: 'Di halaman Detail Beasiswa, klik tombol **Kunjungi Website Resmi**. Link akan terbuka di tab baru dan mengarahkan Anda ke portal resmi penyelenggara beasiswa.'
+      },
+      {
+        keys: ['login', 'masuk', 'sign in', 'akun'],
+        answer: 'Cara login ke Beasiswapedia:\n1. Klik tombol **Login / Daftar** di navbar.\n2. Masukkan **email** dan **kata sandi** Anda.\n3. Klik **Masuk**.\nBelum punya akun? Klik tab **Daftar** untuk membuat akun baru.'
+      },
+      {
+        keys: ['daftar akun', 'register', 'buat akun'],
+        answer: 'Cara membuat akun baru:\n1. Klik **Login / Daftar** di navbar.\n2. Pilih tab **Daftar**.\n3. Isi **Nama Lengkap**, **Email**, dan **Kata Sandi** (min 6 karakter).\n4. Klik **Daftar Sekarang**.'
+      },
+      {
+        keys: ['lupa sandi', 'lupa password', 'reset password'],
+        answer: 'Untuk reset kata sandi, silakan hubungi admin kami di WhatsApp **' + ADMIN_WA_DISPLAY + '**. Tim kami akan membantu proses reset akun Anda.'
+      },
+      {
+        keys: ['katalog', 'cari beasiswa', 'filter', 'pencarian'],
+        answer: 'Di halaman **Katalog Beasiswa** Anda bisa:\n- 🔍 Cari beasiswa berdasarkan kata kunci\n- 🎓 Filter berdasarkan **jenjang pendidikan**\n- 🌍 Filter berdasarkan **negara tujuan**\n- 📅 Urutkan berdasarkan **relevansi** atau **A-Z**'
+      },
+      {
+        keys: ['dashboard', 'profil', 'pengaturan akun'],
+        answer: 'Di halaman **Dashboard** Anda dapat:\n- Melihat beasiswa yang sudah di-**bookmark**\n- Mengubah **nama tampilan** dan **foto profil**\n- Mengganti **kata sandi** akun Anda'
+      },
+      {
+        keys: ['deadline', 'batas waktu', 'kapan', 'tanggal'],
+        answer: 'Informasi deadline pendaftaran tersedia di halaman **Detail Beasiswa** masing-masing. Pastikan Anda mendaftar sebelum batas waktu yang ditentukan.\n\nTips: Gunakan fitur **Bookmark** agar tidak melewatkan deadline!'
+      },
+      {
+        keys: ['beasiswa luar negeri', 'luar negeri', 'study abroad', 'kuliah luar'],
+        answer: 'Beasiswapedia menyediakan informasi berbagai beasiswa luar negeri seperti:\n🇬🇧 **UK** (Imperial College, Oxford)\n🇰🇷 **Korea** (Global Korea Scholarship)\n🇯🇵 **Jepang** (Monbukagakusho/MEXT)\n🇦🇺 **Australia** (AAS/ACIAR)\ndan masih banyak lagi! Cek di **Katalog Beasiswa**.'
+      },
+      {
+        keys: ['konsultasi', 'mentor', 'bimbingan', 'bantuan beasiswa'],
+        answer: 'Beasiswapedia menyediakan layanan **Konsultasi Beasiswa Gratis** bersama mentor berpengalaman!\nHubungi admin kami di WhatsApp **' + ADMIN_WA_DISPLAY + '** atau isi form konsultasi di halaman utama.'
+      },
+      {
+        keys: ['error', 'masalah', 'bug', 'tidak bisa', 'gagal', 'kendala'],
+        answer: 'Mohon maaf atas kendala yang Anda alami. Silakan laporkan masalah ini ke admin kami agar segera ditangani.'
+      },
+      {
+        keys: ['hubungi', 'kontak', 'admin', 'whatsapp', 'wa'],
+        answer: 'Anda dapat menghubungi Admin Beasiswapedia melalui:\n📱 **WhatsApp**: ' + ADMIN_WA_DISPLAY + '\n\nKlik tombol di bawah untuk langsung chat dengan admin!'
+      },
+      {
+        keys: ['halo', 'hai', 'hello', 'hi', 'selamat', 'assalamualaikum'],
+        answer: 'Halo! 👋 Selamat datang di **Asisten Beasiswapedia**!\n\nSaya siap membantu Anda menemukan informasi beasiswa, panduan pendaftaran, dan berbagai pertanyaan seputar platform ini.\n\nApa yang ingin Anda ketahui?'
+      },
+      {
+        keys: ['terima kasih', 'makasih', 'thanks'],
+        answer: 'Sama-sama! 😊 Senang bisa membantu Anda. Jika ada pertanyaan lain seputar beasiswa, jangan ragu untuk bertanya!'
+      }
+    ];
 
-    function appendMessage(text, sender) {
+    function findResponse(query) {
+      var q = query.toLowerCase().trim();
+      for (var i = 0; i < responses.length; i++) {
+        var item = responses[i];
+        for (var j = 0; j < item.keys.length; j++) {
+          if (q.includes(item.keys[j])) {
+            return item.answer;
+          }
+        }
+      }
+      return null;
+    }
+
+    function buildWaRedirectMessage() {
+      var waMsg = encodeURIComponent('Halo Admin Beasiswapedia, saya ingin bertanya mengenai: ');
+      var waUrl = 'https://wa.me/' + ADMIN_WA + '?text=' + waMsg;
+      return 'Maaf, saya belum bisa menjawab pertanyaan tersebut. 🙏\n\nUntuk informasi lebih lanjut, silakan hubungi **Admin Beasiswapedia** langsung:' +
+        '<br><br><a href="' + waUrl + '" target="_blank" rel="noopener" ' +
+        'style="display:inline-flex;align-items:center;gap:6px;background:#25D366;color:white;padding:8px 14px;border-radius:10px;font-weight:bold;text-decoration:none;font-size:11px;margin-top:4px;">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>' +
+        'Chat WhatsApp Admin (' + ADMIN_WA_DISPLAY + ')</a>';
+    }
+
+    function appendMessage(text, sender, isHtml) {
       var wrapper = document.createElement('div');
-      wrapper.className = 'flex gap-2.5 max-w-[85%] ' + (sender === 'user' ? 'ml-auto justify-end' : '');
+      wrapper.className = 'flex gap-2.5 ' + (sender === 'user' ? 'ml-auto justify-end max-w-[85%]' : 'max-w-[92%]');
       
       var avatar = '';
       if (sender === 'bot') {
-        avatar = '<div class="w-7 h-7 rounded-full bg-[#e53935]/10 border border-[#e53935]/20 flex items-center justify-center text-[#e53935] shrink-0">' +
+        avatar = '<div class="w-7 h-7 rounded-full bg-[#0052cc]/10 border border-[#0052cc]/20 flex items-center justify-center text-[#0052cc] shrink-0">' +
           '<i data-lucide="bot" class="w-3.5 h-3.5"></i></div>';
       }
       
       var bubbleClass = sender === 'user' 
-        ? 'bg-[#e53935] text-white rounded-tr-none' 
+        ? 'bg-[#0052cc] text-white rounded-tr-none' 
         : 'bg-muted text-foreground rounded-tl-none';
 
-      var formattedText = text
+      var formattedText = isHtml ? text : text
         .replace(/\n/g, '<br>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
@@ -1235,12 +1337,12 @@
       var wrapper = document.createElement('div');
       wrapper.id = 'chatbot-typing-indicator';
       wrapper.className = 'flex gap-2.5 max-w-[85%]';
-      wrapper.innerHTML = '<div class="w-7 h-7 rounded-full bg-[#e53935]/10 border border-[#e53935]/20 flex items-center justify-center text-[#e53935] shrink-0">' +
+      wrapper.innerHTML = '<div class="w-7 h-7 rounded-full bg-[#0052cc]/10 border border-[#0052cc]/20 flex items-center justify-center text-[#0052cc] shrink-0">' +
         '<i data-lucide="bot" class="w-3.5 h-3.5"></i></div>' +
         '<div class="bg-muted text-foreground rounded-tl-none px-3.5 py-2.5 rounded-2xl text-xs flex items-center gap-1.5 shadow-sm">' +
-        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce"></span>' +
-        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce [animation-delay:0.2s]"></span>' +
-        '<span class="w-1.5 h-1.5 bg-[#e53935] rounded-full animate-bounce [animation-delay:0.4s]"></span>' +
+        '<span class="w-1.5 h-1.5 bg-[#0052cc] rounded-full animate-bounce"></span>' +
+        '<span class="w-1.5 h-1.5 bg-[#0052cc] rounded-full animate-bounce [animation-delay:0.2s]"></span>' +
+        '<span class="w-1.5 h-1.5 bg-[#0052cc] rounded-full animate-bounce [animation-delay:0.4s]"></span>' +
         '</div>';
       chatbotMessages.appendChild(wrapper);
       if (window.lucide) lucide.createIcons();
@@ -1252,39 +1354,56 @@
       if (el) el.remove();
     }
 
-    function sendAiMessage(query) {
+    function sendMessage(query) {
       appendMessage(query, 'user');
       if (chatbotInput) chatbotInput.value = '';
       appendTypingIndicator();
 
-      fetch('/api/chatbot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': getCsrfToken()
-        },
-        body: JSON.stringify({ message: query })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
+      // Delay simulasi berpikir
+      var delay = 600 + Math.floor(Math.random() * 600);
+      setTimeout(function() {
         removeTypingIndicator();
-        if (data.reply) {
-          appendMessage(data.reply, 'bot');
+        var localReply = findResponse(query);
+        if (localReply) {
+          // Cek apakah jawaban mengandung markup khusus (link WA) — langsung tampilkan as-is
+          appendMessage(localReply, 'bot', false);
+          // Jika menyebut kendala/error/masalah, tambahkan link WA
+          var q = query.toLowerCase();
+          if (q.includes('error') || q.includes('masalah') || q.includes('kendala') || q.includes('gagal') || q.includes('tidak bisa')) {
+            setTimeout(function() {
+              appendMessage(buildWaRedirectMessage(), 'bot', true);
+            }, 400);
+          }
         } else {
-          appendMessage("Maaf, terjadi kesalahan saat menghubungi server AI.", 'bot');
+          // Tidak ada jawaban lokal — coba ke server AI, jika gagal arahkan ke WA
+          fetch('/api/chatbot', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify({ message: query })
+          })
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data.reply && data.reply.length > 10) {
+              appendMessage(data.reply, 'bot', false);
+            } else {
+              appendMessage(buildWaRedirectMessage(), 'bot', true);
+            }
+          })
+          .catch(function() {
+            appendMessage(buildWaRedirectMessage(), 'bot', true);
+          });
         }
-      })
-      .catch(function() {
-        removeTypingIndicator();
-        appendMessage("Maaf, jaringan Anda terputus atau terjadi kesalahan sistem.", 'bot');
-      });
+      }, delay);
     }
 
     function handleChatbotSubmit() {
+      if (!chatbotInput) return;
       var query = chatbotInput.value.trim();
       if (!query) return;
-
-      sendAiMessage(query);
+      sendMessage(query);
     }
 
     if (btnSendChatbot) btnSendChatbot.addEventListener('click', handleChatbotSubmit);
@@ -1295,14 +1414,37 @@
     document.querySelectorAll('.chatbot-chip').forEach(function(chip) {
       chip.addEventListener('click', function() {
         var text = chip.textContent.trim();
-        sendAiMessage(text);
+        if (text.toLowerCase().includes('hubungi admin')) {
+          var waMsg = encodeURIComponent('Halo Admin Beasiswapedia, saya ingin bertanya langsung terkait portal beasiswa.');
+          var waUrl = 'https://wa.me/' + ADMIN_WA + '?text=' + waMsg;
+          window.open(waUrl, '_blank');
+          return;
+        }
+        sendMessage(text);
       });
     });
+
+    // Pesan proaktif setelah chatbot dibuka (hanya sekali per sesi)
+    if (btnChatbot && chatbotMessages) {
+      btnChatbot.addEventListener('click', function() {
+        if (!sessionStorage.getItem('chatbot-greeted')) {
+          sessionStorage.setItem('chatbot-greeted', '1');
+          setTimeout(function() {
+            appendMessage('💡 Tips: Kamu juga bisa ketik pertanyaan bebas di kotak chat di bawah, atau klik salah satu topik yang tersedia!', 'bot', false);
+          }, 1200);
+        }
+      });
+    }
   }
 
   function initAdminPanel() {
     var page = document.getElementById('admin-page');
     if (!page) return;
+
+    // Buka chatbot secara otomatis jika masuk ke halaman admin
+    setTimeout(function() {
+      openChatbot();
+    }, 500);
 
     // Proteksi halaman admin: alihkan ke halaman login jika pengguna belum masuk atau bukan administrator
     if (!isLoggedIn() || !isAdmin()) {

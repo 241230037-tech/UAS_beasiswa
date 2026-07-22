@@ -55,7 +55,7 @@
                             <p>Jika Anda mengalami kendala teknis, error saat mengunggah berkas, atau kesulitan lain saat menggunakan website kami, hubungi pusat bantuan kami:</p>
                             <p class="mt-2 text-foreground font-black flex items-center gap-1.5 bg-muted p-2.5 rounded-xl border border-border">
                                 <i data-lucide="phone" class="w-4 h-4 text-green-500"></i>
-                                WhatsApp / Call Center: +62 812-3456-7890
+                                WhatsApp Admin: <a href="https://wa.me/6285751052374?text=Halo%20Admin%20Beasiswapedia,%20saya%20ingin%20melaporkan%20kendala:" target="_blank" class="text-green-600 hover:text-green-700 underline font-black">0857-5105-2374</a>
                             </p>
                         </div>
                     </div>

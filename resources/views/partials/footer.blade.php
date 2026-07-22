@@ -124,7 +124,7 @@
                     </li>
                     <li class="flex items-center gap-2">
                         <i data-lucide="phone" class="w-3.5 h-3.5 text-white shrink-0"></i>
-                        <span class="hover:text-white transition-colors">+62 (21) 4567-8910</span>
+                        <a href="https://wa.me/6285751052374" target="_blank" class="hover:text-white transition-colors">WA Admin: 0857-5105-2374</a>
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-white shrink-0 mt-0.5"></i>
