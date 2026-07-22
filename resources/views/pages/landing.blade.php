@@ -635,14 +635,14 @@
                 
                 @php
                     $alumni = [
-                        ['name' => 'Fadhil', 'uni' => 'Nanyang Technological University', 'scholarship' => 'NTU Undergraduate Scholarship', 'bg' => 'from-rose-400 to-red-500', 'initial' => 'F'],
-                        ['name' => 'Luthfi', 'uni' => 'Tohoku University', 'scholarship' => 'MEXT Scholarship', 'bg' => 'from-blue-400 to-indigo-500', 'initial' => 'L'],
-                        ['name' => 'Sarah', 'uni' => 'University of Oxford', 'scholarship' => 'Jardine Foundation Scholarship', 'bg' => 'from-amber-400 to-orange-500', 'initial' => 'S'],
-                        ['name' => 'Taufik', 'uni' => 'Stanford University', 'scholarship' => 'Knight-Hennessy Scholars', 'bg' => 'from-emerald-400 to-teal-500', 'initial' => 'T'],
-                        ['name' => 'Zahra', 'uni' => 'Kyoto University', 'scholarship' => 'Kyoto University iUP', 'bg' => 'from-purple-400 to-pink-500', 'initial' => 'Z'],
-                        ['name' => 'Aulia', 'uni' => 'Harvard University', 'scholarship' => 'LPDP Beasiswa Utama', 'bg' => 'from-cyan-400 to-blue-500', 'initial' => 'A'],
-                        ['name' => 'Kevin', 'uni' => 'Munich University of Tech', 'scholarship' => 'DAAD Scholarship Germany', 'bg' => 'from-fuchsia-400 to-purple-600', 'initial' => 'K'],
-                        ['name' => 'Dimas', 'uni' => 'University of Melbourne', 'scholarship' => 'AAS Scholarship Australia', 'bg' => 'from-sky-400 to-indigo-600', 'initial' => 'D']
+                        ['name' => 'Yohaness Ahmad Mathius kolose', 'uni' => 'Indonesian Catholic University', 'scholarship' => 'NTU Undergraduate Scholarship', 'bg' => 'from-rose-400 to-red-500', 'initial' => 'A'],
+                        ['name' => 'Muhammad Farel Ramadhan', 'uni' => 'Massachusetts Institute of Technology (MIT)', 'scholarship' => 'MEXT Scholarship', 'bg' => 'from-blue-400 to-indigo-500', 'initial' => 'F'],
+                        ['name' => 'Muhammad Fatwa Al Fiqri', 'uni' => 'University of Oxford', 'scholarship' => 'Jardine Foundation Scholarship', 'bg' => 'from-amber-400 to-orange-500', 'initial' => 'F'],
+                        ['name' => 'Muhammmad Khairil Abdilla', 'uni' => 'Stanford University', 'scholarship' => 'Knight-Hennessy Scholars', 'bg' => 'from-emerald-400 to-teal-500', 'initial' => 'K'],
+                        ['name' => 'Abdu Syaril', 'uni' => 'Kyoto University', 'scholarship' => 'Kyoto University iUP', 'bg' => 'from-purple-400 to-pink-500', 'initial' => 'S'],
+                        ['name' => 'Ragil Pangestu', 'uni' => 'Harvard University', 'scholarship' => 'LPDP Beasiswa Utama', 'bg' => 'from-cyan-400 to-blue-500', 'initial' => 'R'],
+                        ['name' => 'Arsa Maulana Syahputra Adaby', 'uni' => 'Munich University of Tech', 'scholarship' => 'DAAD Scholarship Germany', 'bg' => 'from-fuchsia-400 to-purple-600', 'initial' => 'A'],
+                        ['name' => 'Dimaz Airlangga Dwiyansyah', 'uni' => 'University of Melbourne', 'scholarship' => 'AAS Scholarship Australia', 'bg' => 'from-sky-400 to-indigo-600', 'initial' => 'D']
                     ];
                 @endphp
                 
