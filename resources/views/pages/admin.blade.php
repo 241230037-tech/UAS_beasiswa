@@ -42,6 +42,7 @@
         data-initial-admins='@json($admins)'
         data-initial-users='@json($users)'
         data-initial-carousel-items='@json($carouselItems)'
+        data-initial-applications='@json($applications)'
         data-initial-account-active-days="{{ $accountActiveDays ?? 30 }}">
 
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
@@ -90,6 +91,7 @@
             <button type="button" id="tab-manage-scholarships" class="px-5 py-3 border-b-2 border-[#e53935] font-black text-xs text-[#e53935] tracking-wide uppercase transition-all">Kelola Beasiswa</button>
             <button type="button" id="tab-manage-ads" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Iklan</button>
             <button type="button" id="tab-manage-carousel" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Slider</button>
+            <button type="button" id="tab-manage-applications" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola Pendaftaran</button>
             <button type="button" id="tab-manage-users" class="px-5 py-3 border-b-2 border-transparent font-bold text-xs text-muted-foreground hover:text-foreground tracking-wide uppercase transition-all">Kelola User</button>
         </div>
 
@@ -206,6 +208,43 @@
                 </div>
                 <div id="admin-empty-carousel" class="text-center py-12 text-muted-foreground hidden">
                     <p class="text-sm">Tidak ada data slide ditemukan.</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION KELOLA PENDAFTARAN --}}
+        <div id="section-applications" class="space-y-4 hidden">
+            <div class="bg-card border-2 border-border rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,0.06)] overflow-hidden">
+                <div class="p-5 border-b border-border bg-muted/10 flex items-center justify-between flex-wrap gap-3">
+                    <h3 class="text-foreground font-black text-base">Daftar Pendaftaran Beasiswa</h3>
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-48">
+                            <i data-lucide="search" class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="admin-search-applications" placeholder="Cari pendaftaran..." class="w-full bg-muted text-foreground placeholder-muted-foreground px-4 py-2 pl-9 rounded-xl border border-border text-xs focus:outline-none focus:ring-1 focus:ring-[#e53935]/50">
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-border bg-muted/20 text-muted-foreground font-bold uppercase tracking-wider">
+                                <th class="p-4 w-12">ID</th>
+                                <th class="p-4">Nama Pendaftar</th>
+                                <th class="p-4">Beasiswa</th>
+                                <th class="p-4 w-20">Jenjang</th>
+                                <th class="p-4 w-16">IPK</th>
+                                <th class="p-4 w-48">Dokumen Berkas</th>
+                                <th class="p-4 w-28">Status</th>
+                                <th class="p-4 w-48 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-applications-table-body" class="divide-y divide-border">
+                            {{-- Rendered by JS --}}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="admin-empty-applications" class="text-center py-12 text-muted-foreground hidden">
+                    <p class="text-sm">Tidak ada data pendaftaran ditemukan.</p>
                 </div>
             </div>
         </div>

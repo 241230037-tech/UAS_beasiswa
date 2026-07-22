@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('transcript_path');             // Path file Transkrip di storage
             $table->string('cv_path')->nullable();         // Path file CV di storage (opsional)
             $table->text('motivation');                    // Isi motivation letter (minimal 50 karakter)
+            $table->string('status')->default('pending');  // Status lamaran (pending/dikirim/ditolak)
             $table->timestamps();                          // Kolom created_at dan updated_at otomatis
         });
     }

@@ -26,7 +26,7 @@
     @include('partials.navbar')
 
     {{-- Container pendaftaran --}}
-    <div id="scholarship-register-page" data-id="{{ $scholarship['id'] }}" class="max-w-4xl mx-auto px-4 py-6">
+    <div id="scholarship-register-page" data-id="{{ $scholarship['id'] }}" data-level="{{ $scholarship['level'] }}" class="max-w-4xl mx-auto px-4 py-6">
         <a href="{{ route('scholarship.detail', ['id' => $scholarship['id']]) }}" class="flex items-center gap-1.5 text-muted-foreground hover:text-[#0052cc] transition-colors mb-5 text-sm font-medium group">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
             Kembali ke Detail Beasiswa
@@ -100,13 +100,53 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
+                            @php
+                                $cardLevel = strtolower(trim($scholarship['level'] ?? ''));
+                                
+                                // Deteksi jenjang studi yang didukung beasiswa ini
+                                $showS1 = str_contains($cardLevel, 's1') || str_contains($cardLevel, 's1-s3') || str_contains($cardLevel, 's1-s2');
+                                $showS2 = str_contains($cardLevel, 's2') || str_contains($cardLevel, 's1-s3') || str_contains($cardLevel, 's2-s3') || str_contains($cardLevel, 's1-s2');
+                                $showS3 = str_contains($cardLevel, 's3') || str_contains($cardLevel, 's1-s3') || str_contains($cardLevel, 's2-s3');
+                                $showD4 = str_contains($cardLevel, 'd4');
+                                $showD3 = str_contains($cardLevel, 'd3');
+                                
+                                $visibleLevelsCount = ($showS1 ? 1 : 0) + ($showS2 ? 1 : 0) + ($showS3 ? 1 : 0) + ($showD4 ? 1 : 0) + ($showD3 ? 1 : 0);
+                                
+                                // Fallback jika tidak ada yang terdeteksi
+                                if ($visibleLevelsCount === 0) {
+                                    $showS1 = true;
+                                    $showS2 = true;
+                                    $showS3 = true;
+                                    $showD4 = true;
+                                    $showD3 = true;
+                                    $visibleLevelsCount = 5;
+                                }
+                                
+                                // Pilih otomatis jika beasiswa hanya mendukung satu jenjang spesifik
+                                $autoSelectS1 = $showS1 && ($visibleLevelsCount === 1);
+                                $autoSelectS2 = $showS2 && ($visibleLevelsCount === 1);
+                                $autoSelectS3 = $showS3 && ($visibleLevelsCount === 1);
+                                $autoSelectD4 = $showD4 && ($visibleLevelsCount === 1);
+                                $autoSelectD3 = $showD3 && ($visibleLevelsCount === 1);
+                            @endphp
                             <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Jenjang yang Diajukan *</label>
                             <select name="applied_level" required class="portal-input">
                                 <option value="">Pilih jenjang</option>
-                                <option value="S1">S1 / Sarjana</option>
-                                <option value="S2">S2 / Magister</option>
-                                <option value="S3">S3 / Doktor</option>
-                                <option value="D4">D4 / Vokasi</option>
+                                @if($showS1)
+                                    <option value="S1" {{ $autoSelectS1 ? 'selected' : '' }}>S1 / Sarjana</option>
+                                @endif
+                                @if($showS2)
+                                    <option value="S2" {{ $autoSelectS2 ? 'selected' : '' }}>S2 / Magister</option>
+                                @endif
+                                @if($showS3)
+                                    <option value="S3" {{ $autoSelectS3 ? 'selected' : '' }}>S3 / Doktor</option>
+                                @endif
+                                @if($showD4)
+                                    <option value="D4" {{ $autoSelectD4 ? 'selected' : '' }}>D4 / Vokasi</option>
+                                @endif
+                                @if($showD3)
+                                    <option value="D3" {{ $autoSelectD3 ? 'selected' : '' }}>D3 / Diploma</option>
+                                @endif
                             </select>
                         </div>
                         <div>

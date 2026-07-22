@@ -162,6 +162,10 @@ Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser'])
 Route::put('/admin/users/{id}/deactivate', [AdminController::class, 'setDeactivation'])
     ->name('admin.users.deactivate');
 
+// Perbarui status pendaftaran beasiswa (dikirim/ditolak) berdasarkan ID
+Route::put('/admin/applications/{id}/status', [AdminController::class, 'updateApplicationStatus'])
+    ->name('admin.applications.updateStatus');
+
 // Update pengaturan global (misal: batas masa aktif akun global)
 Route::put('/admin/settings', [AdminController::class, 'updateGlobalSettings'])
     ->name('admin.settings.update');

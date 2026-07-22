@@ -383,6 +383,11 @@ class PageController extends Controller
         $admins        = [];
         $users         = [];
         $carouselItems = [];
+        $applications  = [];
+
+        // Ambil konfigurasi batas upload PHP
+        $phpUploadMax = ini_get('upload_max_filesize') ?: '2M';
+        $phpPostMax   = ini_get('post_max_size') ?: '8M';
 
         try {
             // Ambil semua data beasiswa dari database
@@ -399,6 +404,9 @@ class PageController extends Controller
 
             // Ambil item carousel yang diurutkan berdasarkan order_index
             $carouselItems = CarouselItem::orderBy('order_index', 'asc')->get()->toArray();
+
+            // Ambil seluruh data pendaftaran beasiswa
+            $applications = ScholarshipApplication::all()->toArray();
         } catch (\Throwable $e) {
             // Jika ada error query, reset semua variabel ke array kosong
             $scholarships  = [];
@@ -406,38 +414,22 @@ class PageController extends Controller
             $admins        = [];
             $users         = [];
             $carouselItems = [];
+            $applications  = [];
         }
 
         $accountActiveDays = \App\Models\Setting::get('account_active_days', 30);
 
         // Render template panel admin dengan semua data yang diperlukan
         return view('pages.admin', [
-<<<<<<< HEAD
             'scholarships'      => $scholarships,  // Data beasiswa untuk tabel manajemen
             'adBanners'         => $adBanners,     // Data iklan untuk tabel manajemen
             'admins'            => $admins,        // Data akun admin untuk tabel manajemen
             'users'             => $users,         // Data akun pengguna untuk tabel manajemen
             'carouselItems'     => $carouselItems, // Data slide carousel untuk tabel manajemen
+            'applications'      => $applications,  // Data pendaftaran beasiswa untuk tabel pendaftaran
             'accountActiveDays' => (int) $accountActiveDays, // Pengaturan global batas masa aktif akun
             'phpUploadMax'      => $phpUploadMax,  // Batas upload PHP (ditampilkan sebagai info di UI)
             'phpPostMax'        => $phpPostMax,    // Batas POST PHP (ditampilkan sebagai info di UI)
-=======
-
-            'scholarships'  => $scholarships,  // Data beasiswa untuk tabel manajemen
-            'adBanners'     => $adBanners,     // Data iklan untuk tabel manajemen
-            'admins'        => $admins,        // Data akun admin untuk tabel manajemen
-            'users'         => $users,         // Data akun pengguna untuk tabel manajemen
-            'carouselItems' => $carouselItems, // Data slide carousel untuk tabel manajemen
-            'phpUploadMax'  => $phpUploadMax,  // Batas upload PHP (ditampilkan sebagai info di UI)
-            'phpPostMax'    => $phpPostMax,    // Batas POST PHP (ditampilkan sebagai info di UI)
-
-            'scholarships' => $scholarships,
-            'adBanners' => $adBanners,
-            'admins' => $admins,
-            'users' => $users,
-            'carouselItems' => $carouselItems,
-            'phpUploadMax' => $phpUploadMax,
-            'phpPostMax' => $phpPostMax,
         ]);
     }
 
@@ -1232,8 +1224,6 @@ class PageController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ]
-
->>>>>>> df8af413a7a79ea5ea1803011a8da5a279143986
         ]);
     }
 }

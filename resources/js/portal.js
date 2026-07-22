@@ -1097,6 +1097,28 @@
     var id = page.dataset.id;
     var registerForm = document.getElementById('scholarship-register-form');
     if (registerForm) {
+      // Auto-select jenjang beasiswa berdasarkan data level dari card
+      var cardLevel = (page.dataset.level || '').toLowerCase().trim();
+      var selectLevel = registerForm.querySelector('select[name="applied_level"]');
+      if (selectLevel) {
+        if (selectLevel.options.length === 2 && selectLevel.options[0].value === "") {
+          // Hanya ada 1 opsi valid, pilih opsi tersebut
+          selectLevel.selectedIndex = 1;
+        } else if (cardLevel) {
+          if (cardLevel === 's1' || cardLevel.includes('sarjana') || cardLevel.includes('undergraduate')) {
+            selectLevel.value = 'S1';
+          } else if (cardLevel === 's2' || cardLevel.includes('magister') || cardLevel.includes('master')) {
+            selectLevel.value = 'S2';
+          } else if (cardLevel === 's3' || cardLevel.includes('doktor') || cardLevel.includes('doctor') || cardLevel.includes('phd')) {
+            selectLevel.value = 'S3';
+          } else if (cardLevel === 'd4' || cardLevel.includes('vokasi') || cardLevel.includes('diploma 4')) {
+            selectLevel.value = 'D4';
+          } else if (cardLevel === 'd3' || cardLevel.includes('diploma 3')) {
+            selectLevel.value = 'D3';
+          }
+        }
+      }
+
       var fileInputs = registerForm.querySelectorAll('input[type="file"]');
       fileInputs.forEach(function(input) {
         input.addEventListener('change', function(e) {
@@ -1455,11 +1477,13 @@
     var tabScholarships = document.getElementById('tab-manage-scholarships');
     var tabAds = document.getElementById('tab-manage-ads');
     var tabCarousel = document.getElementById('tab-manage-carousel'); // Request 2
+    var tabApplications = document.getElementById('tab-manage-applications');
     var tabUsers = document.getElementById('tab-manage-users');
 
     var sectionScholarships = document.getElementById('section-scholarships');
     var sectionAds = document.getElementById('section-ads');
     var sectionCarousel = document.getElementById('section-carousel'); // Request 2
+    var sectionApplications = document.getElementById('section-applications');
     var sectionUsers = document.getElementById('section-users');
 
     var subtabNormalUsers = document.getElementById('subtab-normal-users');
@@ -1485,6 +1509,7 @@
         { id: 'tab-manage-scholarships', btn: tabScholarships, section: sectionScholarships, addBtn: btnAddScholarship },
         { id: 'tab-manage-ads', btn: tabAds, section: sectionAds, addBtn: btnAddAd },
         { id: 'tab-manage-carousel', btn: tabCarousel, section: sectionCarousel, addBtn: btnAddCarousel },
+        { id: 'tab-manage-applications', btn: tabApplications, section: sectionApplications, addBtn: null },
         { id: 'tab-manage-users', btn: tabUsers, section: sectionUsers, addBtn: null }
       ];
 
@@ -1513,6 +1538,7 @@
     if (tabScholarships) tabScholarships.addEventListener('click', function() { setActiveTab('tab-manage-scholarships'); });
     if (tabAds) tabAds.addEventListener('click', function() { setActiveTab('tab-manage-ads'); });
     if (tabCarousel) tabCarousel.addEventListener('click', function() { setActiveTab('tab-manage-carousel'); });
+    if (tabApplications) tabApplications.addEventListener('click', function() { setActiveTab('tab-manage-applications'); });
     if (tabUsers) tabUsers.addEventListener('click', function() { setActiveTab('tab-manage-users'); });
 
     // Subtab event listeners
@@ -1538,6 +1564,7 @@
     var admins = JSON.parse(page.dataset.initialAdmins || '[]');
     var users = JSON.parse(page.dataset.initialUsers || '[]');
     var carouselItems = JSON.parse(page.dataset.initialCarouselItems || '[]'); // Request 2
+    var applications = JSON.parse(page.dataset.initialApplications || '[]');
 
     // ================= CRUD AKUN ADMINISTRATOR =================
     var tbodyAdmin = document.getElementById('admin-admins-table-body');
@@ -1711,6 +1738,149 @@
             });
           }
         });
+      });
+    }
+
+    // ================= KELOLA PENDAFTARAN BEASISWA =================
+    var tbodyApp = document.getElementById('admin-applications-table-body');
+    var emptyApp = document.getElementById('admin-empty-applications');
+    var searchInputApp = document.getElementById('admin-search-applications');
+
+    function renderApplicationsTable(filterText) {
+      var list = applications;
+      if (filterText) {
+        var q = filterText.toLowerCase();
+        list = list.filter(function(app) {
+          return app.full_name.toLowerCase().includes(q) ||
+                 app.scholarship_title.toLowerCase().includes(q) ||
+                 app.email.toLowerCase().includes(q) ||
+                 (app.nik && app.nik.toLowerCase().includes(q));
+        });
+      }
+
+      var statApplications = document.getElementById('stat-total-applications');
+      if (statApplications) statApplications.textContent = applications.length;
+
+      if (!tbodyApp) return;
+
+      if (list.length === 0) {
+        tbodyApp.innerHTML = '';
+        if (emptyApp) emptyApp.classList.remove('hidden');
+        return;
+      }
+      if (emptyApp) emptyApp.classList.add('hidden');
+
+      tbodyApp.innerHTML = list.map(function(app) {
+        var docs = '';
+        docs += '<a href="/storage/' + app.ktp_path + '" target="_blank" class="text-blue-500 hover:text-blue-700 underline mr-2 font-bold">KTP</a>';
+        docs += '<a href="/storage/' + app.ijazah_path + '" target="_blank" class="text-blue-500 hover:text-blue-700 underline mr-2 font-bold">Ijazah</a>';
+        docs += '<a href="/storage/' + app.transcript_path + '" target="_blank" class="text-blue-500 hover:text-blue-700 underline mr-2 font-bold">Transkrip</a>';
+        if (app.cv_path) {
+          docs += '<a href="/storage/' + app.cv_path + '" target="_blank" class="text-blue-500 hover:text-blue-700 underline font-bold">CV</a>';
+        }
+
+        var statusBadge = '';
+        if (app.status === 'pending') {
+          statusBadge = '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider">Pending</span>';
+        } else if (app.status === 'dikirim') {
+          statusBadge = '<span class="px-2 py-0.5 rounded bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400 text-[10px] font-bold uppercase tracking-wider">Dikirim</span>';
+        } else if (app.status === 'ditolak') {
+          statusBadge = '<span class="px-2 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">Ditolak</span>';
+        }
+
+        var actions = '';
+        if (app.status === 'pending') {
+          actions = '<button type="button" class="btn-approve-app text-green-500 hover:text-green-700 font-bold mr-3" data-id="' + app.id + '">Kirim ke Link</button>' +
+                    '<button type="button" class="btn-reject-app text-red-500 hover:text-red-700 font-bold" data-id="' + app.id + '">Tolak</button>';
+        } else {
+          actions = '<span class="text-muted-foreground italic text-[11px]">Sudah diproses</span>';
+        }
+
+        var formattedNik = app.nik ? ' <span class="text-[10px] text-muted-foreground font-semibold">(' + app.nik + ')</span>' : '';
+
+        return '<tr class="hover:bg-muted/30 transition-colors border-b border-border">' +
+          '<td class="p-4 font-semibold text-muted-foreground">' + app.id + '</td>' +
+          '<td class="p-4 font-bold text-foreground">' + app.full_name + formattedNik + '<br><span class="text-[10px] text-muted-foreground font-normal">' + app.email + '</span></td>' +
+          '<td class="p-4 text-muted-foreground font-semibold">' + app.scholarship_title + '</td>' +
+          '<td class="p-4 text-muted-foreground font-bold">' + app.applied_level + '</td>' +
+          '<td class="p-4 text-muted-foreground font-bold">' + app.gpa + '</td>' +
+          '<td class="p-4 whitespace-nowrap">' + docs + '</td>' +
+          '<td class="p-4">' + statusBadge + '</td>' +
+          '<td class="p-4 text-right whitespace-nowrap">' + actions + '</td>' +
+          '</tr>';
+      }).join('');
+
+      tbodyApp.querySelectorAll('.btn-approve-app').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var appId = parseInt(btn.dataset.id);
+          if (confirm('Kirim pendaftaran ini ke link beasiswa resmi terkait?')) {
+            fetch('/admin/applications/' + appId + '/status', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+              },
+              body: JSON.stringify({ status: 'dikirim' })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                toast(data.message, 'success');
+                applications = applications.map(function(item) {
+                  return item.id === appId ? data.data : item;
+                });
+                renderApplicationsTable(searchInputApp ? searchInputApp.value : '');
+                if (data.external_link) {
+                  window.open(data.external_link, '_blank');
+                } else {
+                  toast('Peringatan: Link beasiswa resmi tidak ditemukan.', 'warning');
+                }
+              } else {
+                toast(data.message || 'Gagal memproses.', 'error');
+              }
+            })
+            .catch(function() {
+              toast('Terjadi kesalahan jaringan.', 'error');
+            });
+          }
+        });
+      });
+
+      tbodyApp.querySelectorAll('.btn-reject-app').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var appId = parseInt(btn.dataset.id);
+          if (confirm('Apakah Anda yakin ingin menolak pendaftaran ini?')) {
+            fetch('/admin/applications/' + appId + '/status', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+              },
+              body: JSON.stringify({ status: 'ditolak' })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (data.success) {
+                toast(data.message, 'success');
+                applications = applications.map(function(item) {
+                  return item.id === appId ? data.data : item;
+                });
+                renderApplicationsTable(searchInputApp ? searchInputApp.value : '');
+              } else {
+                toast(data.message || 'Gagal memproses.', 'error');
+              }
+            })
+            .catch(function() {
+              toast('Terjadi kesalahan jaringan.', 'error');
+            });
+          }
+        });
+      });
+    }
+
+    if (searchInputApp) {
+      searchInputApp.addEventListener('input', function(e) {
+        renderApplicationsTable(e.target.value);
       });
     }
 
@@ -1910,9 +2080,10 @@
       });
     }
 
-    // Panggil render tabel awal untuk admin dan pengguna
+    // Panggil render tabel awal untuk admin, pengguna, dan pendaftaran
     renderAdminsTable();
     renderUsersTable();
+    renderApplicationsTable();
 
     var scholarships = JSON.parse(page.dataset.initialScholarships || '[]');
     var modalS = document.getElementById('crud-modal');

@@ -11,6 +11,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;                 // Model Eloquent untuk tabel users
+use App\Models\Scholarship;           // Model Eloquent untuk tabel scholarships
+use App\Models\ScholarshipApplication; // Model Eloquent untuk tabel scholarship_applications
 use Illuminate\Http\JsonResponse;   // Tipe return untuk respons JSON ke frontend
 use Illuminate\Http\Request;        // Objek request yang berisi data inputan
 use Illuminate\Support\Facades\Auth;  // Facade untuk mengakses data user yang sedang login
@@ -235,6 +237,46 @@ class AdminController extends Controller
             'data'    => [
                 'account_active_days' => (int) $data['account_active_days'],
             ],
+        ]);
+    }
+
+    /**
+     * Memperbarui status pendaftaran beasiswa (dikirim atau ditolak).
+     * Jika status diubah menjadi 'dikirim', turut mengembalikan external_link beasiswa resmi.
+     *
+     * Endpoint: PUT /admin/applications/{id}/status
+     */
+    public function updateApplicationStatus(Request $request, int $id): JsonResponse
+    {
+        $application = ScholarshipApplication::find($id);
+        if (!$application) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data pendaftaran tidak ditemukan.',
+            ], 404);
+        }
+
+        $data = $request->validate([
+            'status' => 'required|string|in:dikirim,ditolak',
+        ]);
+
+        $application->status = $data['status'];
+        $application->save();
+
+        // Cari external_link beasiswa resmi jika status diset ke 'dikirim'
+        $externalLink = null;
+        if ($data['status'] === 'dikirim') {
+            $scholarship = Scholarship::find($application->scholarship_id);
+            if ($scholarship) {
+                $externalLink = $scholarship->external_link;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status pendaftaran berhasil diperbarui!',
+            'data' => $application,
+            'external_link' => $externalLink,
         ]);
     }
 }
